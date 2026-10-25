@@ -91,6 +91,8 @@ describe('Auftrag', () => {
       pickupArea: 'Wien',
       imprint: { owner: 'A', businessPurpose: 'B', vatId: 'C', companyRegister: 'D', authority: 'E', chamber: 'F' },
       privacyContact: 'datenschutz@firma.at',
+      region: 'Wien',
+      about: { name: 'Max', role: 'Gründer', text: 'Ich rette Kassetten.' },
     };
     assert.deepEqual(configIssues(filled), []);
   });

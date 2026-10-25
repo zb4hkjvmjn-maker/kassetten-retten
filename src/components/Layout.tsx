@@ -78,13 +78,16 @@ export function Layout({ path, children }: Props) {
           </div>
           <ul className="footer-links">
             <li>
+              <a href="../">Startseite von {company.brandName}</a>
+            </li>
+            <li>
               <a href={href('/auftrag')}>Digitalisieren lassen</a>
             </li>
             <li>
-              <a href={href('/impressum')}>Impressum</a>
+              <a href="../impressum.html">Impressum</a>
             </li>
             <li>
-              <a href={href('/datenschutz')}>Datenschutz</a>
+              <a href="../datenschutz.html">Datenschutz</a>
             </li>
             {company.support.url && (
               <li>

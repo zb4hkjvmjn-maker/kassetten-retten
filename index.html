@@ -3,22 +3,349 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Kassetten retten: Alte Audio- und Videokassetten ordnen und die Digitalisierung Schritt für Schritt planen. Deine Erinnerungen verdienen eine Zukunft." />
-    <meta name="theme-color" content="#faf4e8" />
+    <title>{{brandName}} – VHS, Camcorder- und Audiokassetten digitalisieren</title>
+    <meta name="description" content="Wir digitalisieren VHS-, VHS-C-, Video8-, Hi8-, MiniDV- und Audiokassetten – in {{regionPlain}} mit Abholung, per Post oder zum Vorbeibringen. Unverbindlich anfragen oder die Sammlung kostenlos selbst ordnen." />
+    <meta name="theme-color" content="#f8f1e4" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <title>Kassetten retten</title>
-    <script>
-      // Gewählte Ansicht sofort anwenden, damit die Seite nicht kurz im falschen Stil erscheint.
-      try {
-        var a = JSON.parse(localStorage.getItem('kassetten-retten:darstellung') || '{}');
-        if (a.stil === 'modern') document.documentElement.dataset.stil = 'modern';
-        if (a.schrift === 'gross' || a.schrift === 'sehr-gross') document.documentElement.dataset.schrift = a.schrift;
-      } catch (e) {}
-    </script>
+    {{{canonical}}}
+    <meta property="og:type" content="website" />
+    <meta property="og:locale" content="de_AT" />
+    <meta property="og:site_name" content="{{brandName}}" />
+    <meta property="og:title" content="{{brandName}} – Deine Erinnerungen verdienen eine Zukunft" />
+    <meta property="og:description" content="VHS-, Camcorder- und Audiokassetten digitalisieren lassen – oder die Sammlung kostenlos selbst ordnen." />
+    {{{ogUrl}}}
+    {{{ogImage}}}
+    <meta name="twitter:card" content="summary_large_image" />
+    {{{jsonLd}}}
+    <link rel="stylesheet" href="/src/landing/landing.css" />
   </head>
   <body>
-    <noscript>Bitte aktiviere JavaScript, um „Kassetten retten“ zu verwenden.</noscript>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <a class="skip" href="#inhalt">Zum Inhalt springen</a>
+
+    <header class="top">
+      <div class="wrap top__inner">
+        <a class="logo" href="./" aria-label="{{brandName}} – Startseite">
+          <svg viewBox="0 0 64 44" aria-hidden="true"><use href="#kassette" /></svg>
+          <span>{{brandName}}</span>
+        </a>
+        <nav class="top__nav" aria-label="Seitenbereiche">
+          <a href="#ablauf">Ablauf</a>
+          <a href="#preise">Formate &amp; Preise</a>
+          <a href="#ueber-uns">Über uns</a>
+          <a href="#fragen">Fragen</a>
+        </nav>
+        <a class="btn btn--primary btn--sm" href="app/#/auftrag">Anfragen</a>
+      </div>
+    </header>
+
+    <main id="inhalt">
+      <!-- Einstieg -->
+      <section class="hero">
+        <div class="wrap hero__grid">
+          <div class="hero__text">
+            <p class="kicker">Kassetten digitalisieren · {{{region}}}</p>
+            <h1>Deine Erinnerungen verdienen eine&nbsp;Zukunft.</h1>
+            <p class="lead">
+              Hochzeit, Kinderstimmen, der Urlaub von damals: Wir holen deine VHS-, Camcorder- und Audiokassetten
+              aus dem Schrank – und bringen sie auf Fernseher, Handy und Tablet. Damit ihr sie wieder gemeinsam ansehen
+              und an Kinder und Enkel weitergeben könnt.
+            </p>
+            <div class="actions">
+              <a class="btn btn--primary btn--lg" href="app/#/auftrag">Unverbindlich anfragen</a>
+              <a class="btn btn--ghost btn--lg" href="app/" data-sammlung-link>Kostenlos selbst ordnen</a>
+            </div>
+            <ul class="ticks">
+              <li>Anfrage kostenlos</li>
+              <li>Originale kommen zurück</li>
+              <li>Abholung, Post oder vorbeibringen</li>
+            </ul>
+          </div>
+
+          <figure class="hero__art" aria-hidden="true">
+            <svg viewBox="0 0 560 460" class="scene">
+              <defs>
+                <linearGradient id="himmel" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#f7c99b" />
+                  <stop offset="1" stop-color="#f4e2c6" />
+                </linearGradient>
+                <linearGradient id="wiese" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#c9b48d" />
+                  <stop offset="1" stop-color="#b59d73" />
+                </linearGradient>
+                <filter id="schatten" x="-20%" y="-20%" width="140%" height="150%">
+                  <feDropShadow dx="0" dy="14" stdDeviation="14" flood-color="#3b2a1d" flood-opacity="0.22" />
+                </filter>
+              </defs>
+              <!-- Tablet mit Familienvideo -->
+              <g filter="url(#schatten)">
+                <rect x="190" y="40" width="340" height="250" rx="22" fill="#2a211b" />
+                <rect x="204" y="54" width="312" height="222" rx="12" fill="url(#himmel)" />
+                <circle cx="452" cy="104" r="22" fill="#fff4dd" opacity="0.9" />
+                <path d="M204 222 C 270 196 330 206 380 214 C 430 222 480 206 516 196 L516 264 Q516 276 504 276 L216 276 Q204 276 204 264 Z" fill="url(#wiese)" />
+                <!-- Familie -->
+                <g fill="#5a3d2b">
+                  <circle cx="300" cy="150" r="15" />
+                  <path d="M281 238 Q281 176 300 172 Q319 176 319 238 Z" />
+                  <circle cx="345" cy="160" r="13" />
+                  <path d="M329 238 Q329 184 345 180 Q361 184 361 238 Z" />
+                  <circle cx="380" cy="190" r="9" />
+                  <path d="M369 238 Q369 204 380 201 Q391 204 391 238 Z" />
+                </g>
+                <circle cx="360" cy="165" r="34" fill="#2a211b" opacity="0.55" />
+                <path d="M350 149 L376 165 L350 181 Z" fill="#fff" />
+                <rect x="222" y="252" width="276" height="5" rx="2.5" fill="#fff" opacity="0.5" />
+                <rect x="222" y="252" width="118" height="5" rx="2.5" fill="#d9480f" />
+              </g>
+              <!-- Kassetten -->
+              <g transform="translate(14 222) rotate(-8) scale(1.3)" filter="url(#schatten)">
+                <use href="#kassette-gross" width="200" height="128" />
+              </g>
+              <g transform="translate(64 276) rotate(4) scale(1.3)">
+                <use href="#kassette-gross" width="200" height="128" />
+                <text x="100" y="40" text-anchor="middle" class="scene__label">Hochzeit 1987</text>
+              </g>
+            </svg>
+          </figure>
+        </div>
+      </section>
+
+      <!-- Formate -->
+      <section class="formats" aria-label="Formate">
+        <div class="wrap">
+          <p class="formats__title">Diese Formate retten wir</p>
+          <ul class="formats__list">{{{servicesList}}}</ul>
+        </div>
+      </section>
+
+      <!-- Ablauf -->
+      <section class="section" id="ablauf" aria-labelledby="ablauf-titel">
+        <div class="wrap">
+          <p class="kicker">So einfach geht's</p>
+          <h2 id="ablauf-titel">In drei Schritten zurück in die Gegenwart</h2>
+          <ol class="steps">
+            <li>
+              <span class="steps__nr" aria-hidden="true">1</span>
+              <h3>Anfrage senden</h3>
+              <p>Kassetten auswählen oder einfach die Anzahl angeben. Das dauert etwa zwei Minuten und ist kostenlos.</p>
+            </li>
+            <li>
+              <span class="steps__nr" aria-hidden="true">2</span>
+              <h3>Angebot bestätigen &amp; übergeben</h3>
+              <p>Du bekommst ein unverbindliches Angebot. Passt es, bringst du uns die Kassetten – oder wir holen sie ab.</p>
+            </li>
+            <li>
+              <span class="steps__nr" aria-hidden="true">3</span>
+              <h3>Erinnerungen genießen</h3>
+              <p>Du erhältst deine Aufnahmen als Dateien per {{{deliveryText}}} – und deine Originalkassetten zurück.</p>
+            </li>
+          </ol>
+          <div class="handover">
+            <h3>So kommen die Kassetten zu uns</h3>
+            <ul>{{{handoverList}}}</ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Preise -->
+      <section class="section section--tint" id="preise" aria-labelledby="preise-titel">
+        <div class="wrap split">
+          <div>
+            <p class="kicker">Formate &amp; Preise</p>
+            <h2 id="preise-titel">Faire Preise, keine Überraschungen</h2>
+            <p>
+              Jede Sammlung ist anders: Manche haben drei Kassetten im Schrank, andere einen ganzen Karton. Deshalb
+              bekommst du immer zuerst ein Angebot – und entscheidest dann in Ruhe.
+            </p>
+            {{{pricing}}}
+            <a class="btn btn--primary" href="app/#/auftrag">Angebot anfragen</a>
+          </div>
+          <div class="card">
+            <h3>Was du bekommst</h3>
+            <ul class="checks">
+              <li>Deine Aufnahmen als Dateien, die auf Fernseher, Computer, Handy und Tablet laufen</li>
+              <li>Lieferung per {{{deliveryText}}}</li>
+              <li>Deine Originalkassetten zurück</li>
+              <li>Einen Begleitzettel mit Nummern, damit nichts verwechselt wird</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Warum jetzt -->
+      <section class="section" aria-labelledby="jetzt-titel">
+        <div class="wrap">
+          <p class="kicker">Warum jetzt?</p>
+          <h2 id="jetzt-titel">Kassetten werden nicht besser – sie werden älter</h2>
+          <div class="facts">
+            <article>
+              <h3>Magnetbänder altern</h3>
+              <p>Mit den Jahren verlieren Bänder an Qualität. Feuchtigkeit und Wärme können Schimmel und Verklebungen verursachen.</p>
+            </article>
+            <article>
+              <h3>Abspielgeräte werden selten</h3>
+              <p>Funktionierende Videorekorder und Camcorder sind kaum noch zu bekommen – Ersatzteile ebenso.</p>
+            </article>
+            <article>
+              <h3>Erinnerungen weitergeben</h3>
+              <p>Einmal digitalisiert, kannst du Aufnahmen kopieren, sichern und mit der ganzen Familie teilen.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <!-- Über uns -->
+      <section class="section section--dark" id="ueber-uns" aria-labelledby="ueber-titel">
+        <div class="wrap about">
+          <div class="about__portrait" aria-hidden="true">
+            <svg viewBox="0 0 64 44"><use href="#kassette" /></svg>
+          </div>
+          <div>
+            <p class="kicker kicker--light">Über uns</p>
+            <h2 id="ueber-titel">Persönlich, sorgfältig und aus {{{region}}}</h2>
+            <p class="about__text">{{{aboutText}}}</p>
+            <p class="about__sign"><strong>{{{aboutName}}}</strong><br /><span>{{{aboutRole}}}</span></p>
+            <p class="about__contact">
+              <a href="{{phoneHref}}">{{{phone}}}</a>
+              <a href="{{emailHref}}">{{{email}}}</a>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sicherheit -->
+      <section class="section" aria-labelledby="sicher-titel">
+        <div class="wrap">
+          <p class="kicker">Deine Kassetten sind bei uns sicher</p>
+          <h2 id="sicher-titel">Wir gehen mit deinen Erinnerungen um, als wären es unsere</h2>
+          <ul class="trust">
+            <li>
+              <h3>Originale kommen zurück</h3>
+              <p>Du bekommst jede Kassette zusammen mit den Dateien wieder.</p>
+            </li>
+            <li>
+              <h3>Vertraulich</h3>
+              <p>Private Aufnahmen verwenden wir nur für die Digitalisierung – niemals für Werbung.</p>
+            </li>
+            <li>
+              <h3>Nummeriert</h3>
+              <p>Ein Begleitzettel ordnet jede Kassette eindeutig zu.</p>
+            </li>
+            <li>
+              <h3>Schonend</h3>
+              <p>Beschädigte oder schimmelige Kassetten sehen wir uns vorher genau an.</p>
+            </li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- App -->
+      <section class="section section--tint" aria-labelledby="app-titel">
+        <div class="wrap split split--reverse">
+          <div>
+            <p class="kicker">Kostenlos für alle</p>
+            <h2 id="app-titel">Noch nicht so weit? Ordne deine Sammlung selbst.</h2>
+            <p>
+              Mit unserer kostenlosen App erfasst du deine Kassetten, findest heraus, welches Format du hast, und
+              planst Schritt für Schritt die Rettung – auch wenn du selbst digitalisieren möchtest.
+            </p>
+            <ul class="checks">
+              <li>Sammlung mit Format, Jahr, Inhalt und Lagerort</li>
+              <li>Rettungshelfer mit persönlicher Checkliste</li>
+              <li>Ohne Anmeldung – deine Daten bleiben auf deinem Gerät</li>
+            </ul>
+            <a class="btn btn--ghost" href="app/" data-sammlung-link>App kostenlos öffnen</a>
+          </div>
+          <div class="mock" aria-hidden="true">
+            <div class="mock__bar"><i></i><i></i><i></i></div>
+            <div class="mock__title">Meine Sammlung</div>
+            <div class="mock__row"><b>Hochzeit Oma und Opa</b><span class="mock__pill mock__pill--ok">Gesichert</span></div>
+            <div class="mock__row"><b>Urlaub am See 1994</b><span class="mock__pill mock__pill--plan">Geplant</span></div>
+            <div class="mock__row"><b>Kinderlieder</b><span class="mock__pill">Erfasst</span></div>
+            <div class="mock__progress"><span></span></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Fragen -->
+      <section class="section" id="fragen" aria-labelledby="fragen-titel">
+        <div class="wrap faq">
+          <div>
+            <p class="kicker">Häufige Fragen</p>
+            <h2 id="fragen-titel">Gut zu wissen</h2>
+            <p>Deine Frage ist nicht dabei? Ruf uns an oder schreib uns – wir helfen gern.</p>
+            <p class="faq__contact">
+              <a href="{{phoneHref}}">{{{phone}}}</a><br />
+              <a href="{{emailHref}}">{{{email}}}</a>
+            </p>
+          </div>
+          <div class="faq__list">
+{{{faq}}}
+          </div>
+        </div>
+      </section>
+
+      <!-- Abschluss -->
+      <section class="closing" id="kontakt" aria-labelledby="schluss-titel">
+        <div class="wrap closing__inner">
+          <h2 id="schluss-titel">Hol deine Erinnerungen zurück.</h2>
+          <p>Die Anfrage dauert zwei Minuten, ist kostenlos und unverbindlich.</p>
+          <div class="actions actions--center">
+            <a class="btn btn--light btn--lg" href="app/#/auftrag">Jetzt unverbindlich anfragen</a>
+            <a class="btn btn--outline-light btn--lg" href="{{phoneHref}}">Lieber anrufen</a>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="foot">
+      <div class="wrap foot__inner">
+        <div>
+          <p class="foot__brand">{{brandName}}</p>
+          <p>Ein Angebot von {{companyName}}<br />{{{addressHtml}}}</p>
+        </div>
+        <ul class="foot__links">
+          <li><a href="app/#/auftrag">Anfragen</a></li>
+          <li><a href="app/">Kostenlose App</a></li>
+          <li><a href="impressum.html">Impressum</a></li>
+          <li><a href="datenschutz.html">Datenschutz</a></li>
+          {{{supportLink}}}
+        </ul>
+      </div>
+      <p class="wrap foot__note">© {{year}} {{companyName}} · Ohne Tracking, ohne Werbe-Cookies.</p>
+    </footer>
+
+    <div class="sticky-cta">
+      <a class="btn btn--primary" href="app/#/auftrag">Unverbindlich anfragen</a>
+      <a class="btn btn--ghost" href="{{phoneHref}}" aria-label="Anrufen">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2Z" fill="currentColor"/></svg>
+      </a>
+    </div>
+
+    <!-- Wiederverwendete Grafiken -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+      <symbol id="kassette" viewBox="0 0 64 44">
+        <rect x="1.5" y="1.5" width="61" height="41" rx="5" fill="#e9dcc7" stroke="#7d6c5c" stroke-width="2" />
+        <rect x="7" y="6" width="50" height="22" rx="3" fill="#fffcf6" />
+        <rect x="7" y="6" width="50" height="4.5" rx="2" fill="#b44a0e" />
+        <rect x="15" y="15" width="34" height="10" rx="5" fill="#4a3b31" />
+        <circle cx="22" cy="20" r="3.2" fill="#f5ede0" />
+        <circle cx="42" cy="20" r="3.2" fill="#f5ede0" />
+        <path d="M16 42.5l4-8h24l4 8z" fill="#b9a68e" />
+      </symbol>
+      <symbol id="kassette-gross" viewBox="0 0 200 128">
+        <rect x="3" y="3" width="194" height="122" rx="12" fill="#e9dcc7" stroke="#b9a68e" stroke-width="2" />
+        <rect x="20" y="14" width="160" height="76" rx="6" fill="#fffcf6" />
+        <rect x="20" y="14" width="160" height="10" rx="4" fill="#b44a0e" />
+        <rect x="48" y="50" width="104" height="26" rx="13" fill="#4a3b31" />
+        <rect x="84" y="56" width="32" height="14" rx="3" fill="#7a5236" />
+        <circle cx="70" cy="63" r="10" fill="#f5ede0" />
+        <circle cx="70" cy="63" r="3.5" fill="#4a3b31" />
+        <circle cx="130" cy="63" r="10" fill="#f5ede0" />
+        <circle cx="130" cy="63" r="3.5" fill="#4a3b31" />
+        <path d="M46 125 L58 100 H142 L154 125 Z" fill="#b9a68e" opacity="0.6" />
+      </symbol>
+    </svg>
+
+    <script type="module" src="/src/landing/landing.ts"></script>
   </body>
 </html>

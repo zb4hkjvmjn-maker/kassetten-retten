@@ -7,7 +7,6 @@ import { CollectionPage } from './pages/CollectionPage';
 import { DetailPage } from './pages/DetailPage';
 import { FormPage } from './pages/FormPage';
 import { HelperPage } from './pages/HelperPage';
-import { LegalPage } from './pages/LegalPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { OrderPage } from './pages/OrderPage';
 import { OverviewPage } from './pages/OverviewPage';
@@ -45,7 +44,9 @@ export function App() {
     page = <OrderPage api={api} route={route} />;
     title = 'Digitalisieren lassen';
   } else if ((first === 'impressum' || first === 'datenschutz') && !second) {
-    page = <LegalPage kind={first} />;
+    // Impressum und Datenschutz sind eigene Seiten neben der App.
+    window.location.replace(`../${first}.html`);
+    page = null;
     title = first === 'impressum' ? 'Impressum' : 'Datenschutz';
   } else {
     page = <NotFoundPage />;

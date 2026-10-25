@@ -11,6 +11,17 @@ export type HandoverId = 'abholung' | 'versand' | 'abgabe';
 export interface CompanyConfig {
   brandName: string;
   companyName: string;
+  /**
+   * Eigene Domain ohne https://, z. B. „kassetten-retten.at“. Leer = Veröffentlichung unter
+   * https://<nutzername>.github.io/<repository>/. Mit Domain wird automatisch eine CNAME-Datei erzeugt.
+   */
+  domain: string;
+  /** Region für Startseite und Suchmaschinen, z. B. „Wien und Niederösterreich“. */
+  region: string;
+  /** Kurz über dich bzw. das Unternehmen – erscheint unter „Über uns“. */
+  about: { name: string; role: string; text: string };
+  /** Optional: übliche Bearbeitungsdauer, z. B. „etwa 2 Wochen“. Leer = keine Angabe. */
+  turnaround: string;
   /** E-Mail-Adresse, an die Aufträge gehen (auch für den E-Mail-Weg). */
   email: string;
   phone: string;
@@ -60,6 +71,14 @@ export interface CompanyConfig {
 export const company: CompanyConfig = {
   brandName: 'Kassetten retten',
   companyName: 'Simple7Media',
+  domain: '',
+  region: '[z. B. Wien und Umgebung]',
+  about: {
+    name: '[Dein Name]',
+    role: 'Gründer von Kassetten retten · Simple7Media',
+    text: '[Ein paar persönliche Sätze: Warum machst du das? Seit wann? Was ist dir bei fremden Erinnerungen wichtig?]',
+  },
+  turnaround: '',
   email: '[auftrag@deine-domain.at]',
   phone: '[+43 …]',
   address: ['Simple7Media', '[Straße und Hausnummer]', '[PLZ Ort]', 'Österreich'],
@@ -102,6 +121,8 @@ export function configIssues(c: CompanyConfig = company): string[] {
   if (c.handover.includes('abholung') && isPlaceholder(c.pickupArea)) issues.push('Abholgebiet');
   if (c.handover.includes('abgabe') && isPlaceholder(c.openingHours)) issues.push('Zeiten für die persönliche Abgabe');
   if (Object.values(c.imprint).some(isPlaceholder)) issues.push('Impressum');
+  if (isPlaceholder(c.region)) issues.push('Region');
+  if (isPlaceholder(c.about.name) || isPlaceholder(c.about.text)) issues.push('„Über uns“');
   if (isPlaceholder(c.privacyContact)) issues.push('Datenschutz-Kontakt');
   return issues;
 }

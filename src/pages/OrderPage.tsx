@@ -782,7 +782,11 @@ export function OrderPage({ api, route }: { api: CollectionApi; route: Route }) 
               />
               <label htmlFor="auftrag-privacy">
                 Ich bin einverstanden, dass {company.companyName} meine Angaben zur Bearbeitung dieser Anfrage verwendet. Mehr dazu in
-                den <a href={href('/datenschutz')}>Datenschutzhinweisen</a>.
+                den{' '}
+                <a href="../datenschutz.html" target="_blank" rel="noopener">
+                  Datenschutzhinweisen
+                </a>
+                .
               </label>
             </div>
             <p className="field__hint">

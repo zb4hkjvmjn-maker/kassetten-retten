@@ -6,6 +6,24 @@ Eine deutschsprachige, responsive Web-App, mit der Privatpersonen und Familien i
 
 Die App läuft vollständig im Browser – ohne Konto, ohne Server, ohne Tracking. **Sie digitalisiert selbst keine Kassetten**: Dafür braucht es ein passendes Abspielgerät und Aufnahmetechnik oder einen Dienstleister.
 
+## Aufbau der Website
+
+| Adresse | Inhalt |
+| --- | --- |
+| `/` | **Startseite** (Landingpage) – statisches HTML, gut für Google und Vorschaubilder in WhatsApp & Co. |
+| `/app/` | **Die App** – Sammlung, Rettungshelfer, Sicherungscheckliste und Anfrage |
+| `/impressum.html`, `/datenschutz.html` | Rechtliche Seiten |
+
+Startseite, Impressum und Datenschutz werden beim Build mit den Angaben aus `src/config.ts` gefüllt (Vorlagen-Syntax `{{name}}` in den HTML-Dateien, Logik in `src/landing/render.ts`). Noch offene Angaben in `[eckigen Klammern]` erscheinen gelb markiert, damit sie auffallen.
+
+### Startseite anpassen
+
+- **Texte:** direkt in `index.html`. Firmenangaben (Region, Telefon, E-Mail, „Über uns“, Preise, Formate) in `src/config.ts`.
+- **Dein Foto bei „Über uns“:** Bild als `public/bilder/portrait.jpg` ablegen und in `index.html` im Block `about__portrait` das `<svg>…</svg>` ersetzen durch `<img src="/bilder/portrait.jpg" alt="" />`.
+- **Vorschaubild für Messenger:** `public/og-image.png` (1200 × 630 Pixel) – gerne durch ein eigenes Foto ersetzen.
+- **Eigene Domain:** in `src/config.ts` `domain: 'kassetten-retten.at'` eintragen. Der Build erzeugt dann automatisch die `CNAME`-Datei, passt alle Pfade an und setzt Canonical-Link, Sitemap und Vorschaubild auf die Domain. Beim Domain-Anbieter einen CNAME-Eintrag `www` → `<nutzername>.github.io` bzw. für die Hauptdomain die vier A-Einträge von GitHub Pages anlegen und unter Settings → Pages die Domain eintragen und „Enforce HTTPS“ aktivieren.
+- Ohne eigene Domain ermittelt der Build die Adresse `https://<nutzername>.github.io/<repository>/` automatisch.
+
 ## Funktionen
 
 - **Übersicht** – kurze Einführung, drei Schritte (Erfassen, Digitalisierung planen, Erinnerungen sichern), Fortschritt mit Zahlen und Balken, passende nächste Aktion.
@@ -21,7 +39,7 @@ Voraussetzung: [Node.js](https://nodejs.org/) ab Version 20.19 (empfohlen: 22).
 
 ```bash
 npm install        # Abhängigkeiten installieren (erzeugt package-lock.json)
-npm run dev        # Entwicklungsserver, meist unter http://localhost:5173
+npm run dev        # Entwicklungsserver: Startseite unter http://localhost:5173, App unter /app/
 ```
 
 Weitere Befehle:
@@ -53,9 +71,8 @@ Tipp: Committe nach dem ersten `npm install` die entstandene `package-lock.json`
 
 ### Repository-Unterpfad und Routing
 
-- Die App verwendet **Hash-Routing** (`…/kassetten-retten/#/sammlung`). Dadurch funktionieren Unterseiten auch beim Neuladen oder als Lesezeichen – GitHub Pages liefert keine 404-Fehler.
-- `vite.config.ts` setzt `base: './'`. Alle Dateien werden relativ eingebunden, deshalb funktioniert die App unter jedem Repository-Namen, ohne dass etwas angepasst werden muss.
-- Wer einen festen Pfad bevorzugt, kann beim Build `BASE_PATH` setzen, z. B. `BASE_PATH=/kassetten-retten/ npm run build`.
+- Der Basis-Pfad wird beim Build automatisch gesetzt: `/<repository>/` auf GitHub Pages, `/` mit eigener Domain (`config.domain`). Bei Bedarf überschreibt `BASE_PATH` ihn, z. B. `BASE_PATH=/test/ npm run build`.
+- Die App unter `/app/` verwendet Hash-Routing (`…/app/#/sammlung`). Unterseiten funktionieren dadurch auch beim Neuladen ohne 404-Fehler. Alte Links ohne `/app/` leitet die Startseite automatisch weiter.
 
 ## Datenspeicherung
 
@@ -132,6 +149,9 @@ Die App kostet im Betrieb nichts: GitHub Pages ist kostenlos, es gibt keinen Ser
 ## Projektstruktur
 
 ```
+index.html               Startseite (Vorlage)
+impressum.html, datenschutz.html
+app/index.html           Einstieg der App
 src/
   main.tsx               Einstieg
   App.tsx                Routen, Seitentitel, Fokus beim Seitenwechsel
@@ -148,8 +168,9 @@ src/
     StorageNotice.tsx    Hinweis zur lokalen Speicherung
     Toast.tsx            Kurze Rückmeldungen (auch für Screenreader)
     ServiceTeaser.tsx    Dezentes Angebot „Digitalisieren lassen“
-  config.ts              Firmendaten, Angebot, Übermittlung, Impressum
-  pages/                 Übersicht, Sammlung, Detail, Formular, Rettungshelfer, Anfrage, Impressum/Datenschutz
+  config.ts              Firmendaten, Angebot, Übermittlung, Impressum, Domain
+  landing/               Startseite: Styles, kleines Skript, Vorlagen-Renderer (render.ts)
+  pages/                 Übersicht, Sammlung, Detail, Formular, Rettungshelfer, Anfrage
   hooks/                 Hash-Routing, Sammlung mit Speicherung, gespeicherter Zustand
   lib/                   Reine Logik ohne React – mit Tests (*.test.ts)
 .github/workflows/deploy.yml   Build und Veröffentlichung
