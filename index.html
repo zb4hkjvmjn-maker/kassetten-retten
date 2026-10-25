@@ -7,6 +7,14 @@
     <meta name="theme-color" content="#faf4e8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <title>Kassetten retten</title>
+    <script>
+      // Gewählte Ansicht sofort anwenden, damit die Seite nicht kurz im falschen Stil erscheint.
+      try {
+        var a = JSON.parse(localStorage.getItem('kassetten-retten:darstellung') || '{}');
+        if (a.stil === 'modern') document.documentElement.dataset.stil = 'modern';
+        if (a.schrift === 'gross' || a.schrift === 'sehr-gross') document.documentElement.dataset.schrift = a.schrift;
+      } catch (e) {}
+    </script>
   </head>
   <body>
     <noscript>Bitte aktiviere JavaScript, um „Kassetten retten“ zu verwenden.</noscript>

@@ -155,6 +155,10 @@ src/
 .github/workflows/deploy.yml   Build und Veröffentlichung
 ```
 
+## Ansicht: zwei Stile und drei Schriftgrößen
+
+Über „Ansicht“ in der Kopfzeile wählt man zwischen **Heimelig** (warmes Papier, Serifenschrift, Fotoalbum-Gefühl) und **Modern** (hell und klar, kräftige Schrift, dunkle Akzentflächen) sowie zwischen den Schriftgrößen **Normal, Groß und Sehr groß**. Die Wahl wird im Browser gemerkt und schon vor dem Laden der App angewendet. Beide Stile nutzen dieselben Farbvariablen in `src/styles.css`; „Modern“ überschreibt sie unter `:root[data-stil='modern']`.
+
 ## Barrierearmut
 
 - Kontraste nach WCAG AA (Fließtext ca. 14 : 1, Buttons ≥ 5 : 1), sichtbare Fokusrahmen, Skip-Link.

@@ -14,7 +14,7 @@ const STEPS = [
   },
   {
     title: 'Digitalisierung planen',
-    text: 'Der Rettungshelfer klärt mit dir Format, Zustand und Geräte – und ob du selbst digitalisierst oder einen Dienstleister beauftragst.',
+    text: 'Der Rettungshelfer klärt mit dir Format, Zustand und Geräte – und ob du selbst digitalisierst oder es uns überlässt.',
     link: { label: 'Zum Rettungshelfer', path: '/rettungshelfer' },
   },
   {
@@ -47,9 +47,17 @@ export function OverviewPage({ api }: { api: CollectionApi }) {
               {count > 0 ? `Zu meiner Sammlung (${count})` : 'Zu meiner Sammlung'}
             </a>
           </div>
+          <ul className="trust-list">
+            <li>Kostenlos</li>
+            <li>Ohne Anmeldung</li>
+            <li>Deine Daten bleiben bei dir</li>
+          </ul>
         </div>
         <div className="hero__art">
-          <CassetteArt label="Erinnerungen" animated />
+          <div className="hero__stack" aria-hidden="true">
+            <CassetteArt className="hero__back" label="Urlaub 1994" />
+            <CassetteArt className="hero__front" label="Erinnerungen" animated />
+          </div>
         </div>
       </section>
 

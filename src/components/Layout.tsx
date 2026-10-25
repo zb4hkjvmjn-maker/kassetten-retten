@@ -1,12 +1,13 @@
 import type { ReactNode } from 'react';
 import { company } from '../config';
 import { href } from '../hooks/useHashRoute';
+import { AppearanceMenu } from './AppearanceMenu';
 import { CassetteArt } from './CassetteArt';
 
 const NAV = [
   { path: '/', label: 'Übersicht', match: (p: string) => p === '/' },
   { path: '/sammlung', label: 'Meine Sammlung', match: (p: string) => p.startsWith('/sammlung') },
-  { path: '/rettungshelfer', label: 'Rettungshelfer', match: (p: string) => p.startsWith('/rettungshelfer') },
+  { path: '/rettungshelfer', label: 'Rettungs\u00adhelfer', match: (p: string) => p.startsWith('/rettungshelfer') },
 ];
 
 interface Props {
@@ -35,13 +36,16 @@ export function Layout({ path, children }: Props) {
             <CassetteArt className="brand__icon" />
             <span className="brand__name">Kassetten retten</span>
           </a>
-          <a
+          <div className="header-tools">
+            <AppearanceMenu />
+            <a
             className={`btn btn--primary btn--small header-cta ${path.startsWith('/auftrag') ? 'is-active' : ''}`}
             href={href('/auftrag')}
             aria-current={path.startsWith('/auftrag') ? 'page' : undefined}
           >
             Digitalisieren lassen
-          </a>
+            </a>
+          </div>
           <nav aria-label="Hauptnavigation" className="main-nav">
             <ul>
               {NAV.map((item) => {
