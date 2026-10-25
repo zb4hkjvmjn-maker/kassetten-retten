@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { applyInput, createCassette } from '../lib/collection';
+import { createId } from '../lib/id';
 import { createSampleCassettes } from '../lib/sampleData';
 import { loadCollection, requestPersistentStorage, saveCollection } from '../lib/storage';
 import { mergeCassettes } from '../lib/validation';
@@ -20,6 +21,8 @@ export interface CollectionApi {
   removeSamples: () => number;
   clearAll: () => void;
   markOrdered: (ids: string[], ref: string) => void;
+  addMoment: (id: string, time: string, text: string) => void;
+  removeMoment: (id: string, momentId: string) => void;
 }
 
 export function useCollection(): CollectionApi {
@@ -111,6 +114,24 @@ export function useCollection(): CollectionApi {
     );
   }, []);
 
+  const addMoment = useCallback((id: string, time: string, text: string) => {
+    const now = new Date().toISOString();
+    setCassettes((prev) =>
+      prev.map((c) =>
+        c.id === id
+          ? { ...c, moments: [...(c.moments ?? []), { id: createId(), time: time.trim(), text: text.trim() }], updatedAt: now }
+          : c,
+      ),
+    );
+  }, []);
+
+  const removeMoment = useCallback((id: string, momentId: string) => {
+    const now = new Date().toISOString();
+    setCassettes((prev) =>
+      prev.map((c) => (c.id === id ? { ...c, moments: (c.moments ?? []).filter((m) => m.id !== momentId), updatedAt: now } : c)),
+    );
+  }, []);
+
   return {
     cassettes,
     loadProblem: initial.problem,
@@ -126,5 +147,7 @@ export function useCollection(): CollectionApi {
     removeSamples,
     clearAll,
     markOrdered,
+    addMoment,
+    removeMoment,
   };
 }

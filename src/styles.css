@@ -2398,3 +2398,266 @@ input[type='tel']:focus-visible {
 .size-option {
   align-content: start;
 }
+
+/* ---------- Pakete, Musik, Lieblingsmomente, Gutschein ---------- */
+
+.section__lead {
+  color: var(--muted);
+  max-width: 40em;
+  margin-bottom: 1.25rem;
+}
+
+.chip-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.chip-choice {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: 46px;
+  padding: 0.45rem 1rem;
+  border: 2px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg);
+  font-weight: 650;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+.chip-choice:hover {
+  border-color: var(--border-strong);
+}
+.chip-choice input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+.chip-choice.is-selected {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent-hover);
+}
+.chip-choice.is-selected::before {
+  content: '✓';
+  margin-right: 0.4rem;
+  font-weight: 800;
+}
+.chip-choice:focus-within {
+  outline: 3px solid var(--text);
+  outline-offset: 2px;
+}
+.choice-group__hint {
+  margin: -0.35rem 0 0.6rem;
+}
+.choice-group--error .chip-choice,
+.choice-group--error .choice {
+  border-color: var(--danger);
+}
+.choice-group:focus-visible {
+  outline: 3px solid var(--text);
+  outline-offset: 4px;
+  border-radius: 8px;
+}
+
+.packages {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+}
+.package {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.35rem 1.25rem 1.25rem;
+  box-shadow: var(--shadow);
+}
+.package--highlight {
+  border-color: var(--accent);
+}
+.package__badge {
+  position: absolute;
+  top: -0.8rem;
+  left: 1.1rem;
+  background: var(--accent);
+  color: var(--on-accent);
+  font-size: 0.8rem;
+  font-weight: 750;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 0.15rem 0.65rem;
+  border-radius: 999px;
+}
+.package__name {
+  font-family: var(--font-display);
+  font-weight: var(--heading-weight);
+  font-size: 1.3rem;
+  margin: 0;
+}
+.package__tagline {
+  color: var(--muted);
+  margin: 0;
+}
+.package__price {
+  font-weight: 800;
+  font-size: 1.1rem;
+  margin: 0.25rem 0 0.35rem;
+  font-variant-numeric: tabular-nums;
+}
+.package__includes {
+  margin: 0 0 0.75rem;
+  padding-left: 1.1em;
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.97rem;
+  flex: 1;
+  align-content: start;
+}
+.package .btn {
+  align-self: flex-start;
+}
+.package--pick {
+  cursor: pointer;
+  padding-left: 3.25rem;
+}
+.package--pick input {
+  position: absolute;
+  left: 1.15rem;
+  top: 1.5rem;
+  z-index: 1;
+}
+.package--pick label {
+  cursor: pointer;
+}
+.package--pick label::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+.package--pick.is-selected {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.package--pick:focus-within {
+  outline: 3px solid var(--text);
+  outline-offset: 2px;
+}
+.package--pick .package__includes {
+  margin-bottom: 0;
+}
+
+.voucher-link {
+  margin-top: 1.25rem;
+  font-weight: 650;
+}
+.deadline-note,
+.music-note {
+  display: block;
+  margin: 0;
+}
+
+.lyrics {
+  border: 2px dashed var(--accent-border);
+  border-radius: var(--radius);
+  padding: 1rem 1.25rem 1.25rem;
+  background: var(--bg);
+}
+.lyrics h3 {
+  margin-bottom: 0.25rem;
+}
+.lyrics:focus-visible {
+  outline: 3px solid var(--text);
+}
+.moments-summary {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-small);
+  padding: 1rem 1.25rem;
+}
+.moments-summary h3 {
+  font-size: 1.05rem;
+  font-family: var(--font);
+}
+.moments-summary ul {
+  margin: 0;
+}
+
+.moments__list {
+  list-style: none;
+  margin: 0 0 1rem;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+.moments__list li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-small);
+  background: var(--bg);
+}
+.moments__star {
+  color: var(--accent);
+  font-size: 1.2rem;
+}
+.moments__text {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.moments__time {
+  display: inline-block;
+  font-weight: 750;
+  font-variant-numeric: tabular-nums;
+  margin-right: 0.5rem;
+  color: var(--accent-hover);
+}
+.moments__form {
+  display: grid;
+  gap: 0 1rem;
+  align-items: end;
+}
+@media (min-width: 700px) {
+  .moments__form {
+    grid-template-columns: 10rem 1fr auto;
+  }
+}
+.moments__form .field {
+  margin-top: 0.75rem;
+}
+.moments__form .btn {
+  margin-top: 0.75rem;
+}
+.moments__cta {
+  margin-top: 1rem;
+  font-weight: 650;
+}
+
+.form-grid--two {
+  max-width: none;
+}
+@media (min-width: 700px) {
+  .form-grid--two {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+.narrow-wide {
+  max-width: 900px;
+}
+:root[data-stil='modern'] .package {
+  border-color: transparent;
+}
+:root[data-stil='modern'] .package--highlight,
+:root[data-stil='modern'] .package--pick.is-selected {
+  border-color: var(--accent);
+}

@@ -10,6 +10,8 @@ import {
   type CassetteInput,
   type Checklist,
   type ConditionId,
+  type Moment,
+  MOMENT_LIMITS,
   type FormatId,
   type StatusId,
 } from './types';
@@ -138,6 +140,29 @@ function readChecklist(value: unknown, errors: string[]): Checklist {
   return result;
 }
 
+function readMoments(value: unknown, errors: string[]): Moment[] {
+  if (value === undefined || value === null) return [];
+  if (!Array.isArray(value) || value.length > MOMENT_LIMITS.count) {
+    errors.push('Die Lieblingsmomente haben ein ungültiges Format.');
+    return [];
+  }
+  const result: Moment[] = [];
+  for (const m of value) {
+    if (!isRecord(m) || typeof m.text !== 'string' || (m.time !== undefined && typeof m.time !== 'string')) {
+      errors.push('Ein Lieblingsmoment ist ungültig.');
+      return [];
+    }
+    const text = m.text.trim();
+    const time = typeof m.time === 'string' ? m.time.trim() : '';
+    if (!text || text.length > MOMENT_LIMITS.text || time.length > MOMENT_LIMITS.time) {
+      errors.push('Ein Lieblingsmoment ist leer oder zu lang.');
+      return [];
+    }
+    result.push({ id: typeof m.id === 'string' && m.id ? m.id.slice(0, 100) : createId(), time, text });
+  }
+  return result;
+}
+
 /**
  * Prüft den Inhalt einer Importdatei. Akzeptiert das eigene Exportformat
  * sowie (tolerant) eine reine Liste von Kassetten.
@@ -202,6 +227,7 @@ export function parseImport(text: string, now = new Date()): ImportResult {
     const location = readText(raw, 'location', FIELD_LIMITS.location, 'Lagerort', itemErrors);
     const notes = readText(raw, 'notes', FIELD_LIMITS.notes, 'Notizen', itemErrors);
     const checklist = readChecklist(raw.checklist, itemErrors);
+    const moments = readMoments(raw.moments, itemErrors);
 
     if (itemErrors.length > 0) {
       const name = title ? ` („${title.slice(0, 40)}“)` : '';
@@ -228,6 +254,7 @@ export function parseImport(text: string, now = new Date()): ImportResult {
       notes,
       status,
       checklist,
+      moments,
       ...(raw.sample === true ? { sample: true } : {}),
       ...(typeof raw.orderRef === 'string' && /^KR-[\w-]{1,30}$/.test(raw.orderRef) ? { orderRef: raw.orderRef } : {}),
       createdAt,

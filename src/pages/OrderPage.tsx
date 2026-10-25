@@ -1,5 +1,7 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { CassetteArt } from '../components/CassetteArt';
+import { Address, ChoiceGroup, copyText, PrivacyCheck, TextField } from '../components/FormBits';
+import { PackageCards } from '../components/PackageCards';
 import { StatusBadge } from '../components/StatusBadge';
 import { useToast } from '../components/Toast';
 import { availableHandover, company, configIssues } from '../config';
@@ -12,140 +14,110 @@ import {
   createOrderRef,
   EMPTY_CONTACT,
   EMPTY_DRAFT,
+  findPackage,
   HANDOVER_LABELS,
   mailtoLink,
   needsAddress,
+  normalizeDraft,
   orderText,
   parseExtraCount,
+  STEP_LABELS,
+  stepsFor,
   submitToEndpoint,
   validateContact,
+  validateFilm,
   validateFinal,
   validateHandover,
+  validateMusic,
+  validatePackage,
   validateSelection,
+  type FilmBrief,
+  type MusicBrief,
   type OrderContact,
   type OrderDraft,
   type OrderErrors,
   type SentOrder,
+  type StepId,
 } from '../lib/order';
 
-const STEPS = ['Kassetten', 'Übergabe', 'Kontakt', 'Absenden'];
 const DRAFT_KEY = 'kassetten-retten:auftrag-entwurf';
 const HISTORY_KEY = 'kassetten-retten:auftraege';
-
-interface TextFieldProps {
-  id: string;
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  error?: string;
-  hint?: ReactNode;
-  optional?: boolean;
-  type?: 'text' | 'email' | 'tel';
-  autoComplete?: string;
-  inputMode?: 'text' | 'numeric' | 'email' | 'tel';
-  multiline?: boolean;
-}
-
-function TextField({ id, label, value, onChange, error, hint, optional, type = 'text', autoComplete, inputMode, multiline }: TextFieldProps) {
-  const describedBy = [error ? `${id}-fehler` : '', hint ? `${id}-hinweis` : ''].filter(Boolean).join(' ') || undefined;
-  return (
-    <div className={`field ${error ? 'field--error' : ''}`}>
-      <label htmlFor={id} className="field__label">
-        {label}
-        {optional && <span className="field__optional"> (optional)</span>}
-      </label>
-      {error && (
-        <p id={`${id}-fehler`} className="field__error">
-          {error}
-        </p>
-      )}
-      {multiline ? (
-        <textarea id={id} rows={3} value={value} onChange={(e) => onChange(e.target.value)} aria-describedby={describedBy} aria-invalid={error ? true : undefined} />
-      ) : (
-        <input
-          id={id}
-          type={type}
-          value={value}
-          onChange={(e) => onChange(e.target.value)}
-          aria-describedby={describedBy}
-          aria-invalid={error ? true : undefined}
-          autoComplete={autoComplete}
-          inputMode={inputMode}
-        />
-      )}
-      {hint && (
-        <p id={`${id}-hinweis`} className="field__hint">
-          {hint}
-        </p>
-      )}
-    </div>
-  );
-}
-
-function Address() {
-  return (
-    <address className="company-address">
-      {company.address.map((line) => (
-        <span key={line}>{line}</span>
-      ))}
-    </address>
-  );
-}
-
-async function copyText(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    return false;
-  }
-}
 
 /** Ablauf: unverbindliche Digitalisierungsanfrage an Kassetten retten. */
 export function OrderPage({ api, route }: { api: CollectionApi; route: Route }) {
   const notify = useToast();
-  const [draft, setDraft] = useStoredState<OrderDraft>(DRAFT_KEY, EMPTY_DRAFT);
+  const [storedDraft, setDraft] = useStoredState<OrderDraft>(DRAFT_KEY, EMPTY_DRAFT);
+  const draft = normalizeDraft(storedDraft);
   const [history, setHistory] = useStoredState<SentOrder[]>(HISTORY_KEY, []);
-  const [step, setStep] = useState<number | null>(null);
+  const [stepId, setStepId] = useState<StepId | null>(null);
   const [errors, setErrors] = useState<OrderErrors>({});
   const [sending, setSending] = useState(false);
   const [sendError, setSendError] = useState('');
   const [mailOpened, setMailOpened] = useState(false);
   const [orderRef, setOrderRef] = useState(createOrderRef);
   const stepHeading = useRef<HTMLHeadingElement>(null);
-  const previousStep = useRef<number | null>(step);
+  const previousStep = useRef<StepId | null>(stepId);
+  const steps = stepsFor(company, draft);
+  const step = stepId === null ? null : Math.max(0, steps.indexOf(stepId));
+  const current: StepId | null = step === null ? null : steps[step];
+  const pkg = findPackage(company, draft.packageId);
 
   const handoverOptions = availableHandover();
   const issues = configIssues();
   const shownRef = route.query.get('gesendet');
   const sent = shownRef ? history.find((o) => o.ref === shownRef) : undefined;
 
-  // Auswahl aus Links übernehmen, z. B. /auftrag?kassetten=a,b
+  // Auswahl aus Links übernehmen, z. B. /auftrag?kassetten=a,b&paket=erinnerungsfilm
   const preselect = route.query.get('kassetten');
+  const prePackage = route.query.get('paket');
   useEffect(() => {
-    if (!preselect) return;
-    const ids = preselect.split(',').filter((id) => api.cassettes.some((c) => c.id === id));
-    if (ids.length === 0) return;
-    setDraft((d) => ({ ...d, selected: Array.from(new Set([...d.selected, ...ids])) }));
-    setStep(0);
+    const ids = preselect ? preselect.split(',').filter((id) => api.cassettes.some((c) => c.id === id)) : [];
+    const packageOk = prePackage && findPackage(company, prePackage);
+    if (ids.length === 0 && !packageOk) return;
+    setDraft((d) => {
+      const n = normalizeDraft(d);
+      return {
+        ...n,
+        selected: Array.from(new Set([...n.selected, ...ids])),
+        packageId: packageOk ? prePackage : n.packageId,
+      };
+    });
+    setStepId('kassetten');
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [preselect]);
+  }, [preselect, prePackage]);
 
   // Nicht mehr vorhandene Kassetten aus der Auswahl entfernen.
   const selected = draft.selected.filter((id) => api.cassettes.some((c) => c.id === id));
 
   useEffect(() => {
-    if (previousStep.current === step) return;
-    previousStep.current = step;
-    if (step !== null) stepHeading.current?.focus();
-  }, [step]);
+    if (previousStep.current === stepId) return;
+    previousStep.current = stepId;
+    if (stepId !== null) stepHeading.current?.focus();
+  }, [stepId]);
 
   const update = (patch: Partial<OrderDraft>) => {
-    setDraft((d) => ({ ...d, ...patch }));
+    setDraft((d) => ({ ...normalizeDraft(d), ...patch }));
     setSendError('');
   };
+  const updateFilm = (patch: Partial<FilmBrief>) => {
+    setDraft((d) => {
+      const n = normalizeDraft(d);
+      return { ...n, film: { ...n.film, ...patch } };
+    });
+    setErrors({});
+  };
+  const updateMusic = (patch: Partial<MusicBrief>) => {
+    setDraft((d) => {
+      const n = normalizeDraft(d);
+      return { ...n, music: { ...n.music, ...patch } };
+    });
+    setErrors({});
+  };
   const updateContact = (patch: Partial<OrderContact>) => {
-    setDraft((d) => ({ ...d, contact: { ...d.contact, ...patch } }));
+    setDraft((d) => {
+      const n = normalizeDraft(d);
+      return { ...n, contact: { ...n.contact, ...patch } };
+    });
     setErrors((e) => {
       const next = { ...e };
       for (const k of Object.keys(patch)) delete next[k as keyof OrderErrors];
@@ -153,10 +125,18 @@ export function OrderPage({ api, route }: { api: CollectionApi; route: Route }) 
     });
   };
 
-  const validators = [validateSelection, validateHandover, validateContact, validateFinal];
+  const validators: Record<StepId, (d: OrderDraft) => OrderErrors> = {
+    kassetten: validateSelection,
+    paket: (d) => validatePackage(d, company),
+    film: validateFilm,
+    musik: validateMusic,
+    uebergabe: validateHandover,
+    kontakt: validateContact,
+    absenden: (d) => validateFinal(d, company),
+  };
   const goNext = () => {
-    if (step === null) return;
-    const found = validators[step]({ ...draft, selected });
+    if (step === null || current === null) return;
+    const found = validators[current]({ ...draft, selected });
     setErrors(found);
     if (Object.keys(found).length > 0) {
       const firstKey = Object.keys(found)[0];
@@ -164,11 +144,15 @@ export function OrderPage({ api, route }: { api: CollectionApi; route: Route }) 
       target?.focus();
       return;
     }
-    setStep(step + 1);
+    setStepId(steps[step + 1] ?? 'absenden');
   };
   const goBack = () => {
     setErrors({});
-    setStep((s) => (s === null || s === 0 ? null : s - 1));
+    setStepId(step === null || step === 0 ? null : steps[step - 1]);
+  };
+  const goTo = (id: StepId) => {
+    setErrors({});
+    setStepId(id);
   };
 
   const cassettesById = new Map(api.cassettes.map((c) => [c.id, c]));
@@ -176,7 +160,7 @@ export function OrderPage({ api, route }: { api: CollectionApi; route: Route }) 
   const extra = parseExtraCount(draft.extraCount) ?? 0;
   const total = chosen.length + extra;
 
-  const payload = buildPayload({ ...draft, selected }, api.cassettes, orderRef);
+  const payload = buildPayload({ ...draft, selected }, api.cassettes, orderRef, new Date(), company);
 
   const finalize = (method: SentOrder['method']) => {
     if (!draft.handover) return;
@@ -185,6 +169,7 @@ export function OrderPage({ api, route }: { api: CollectionApi; route: Route }) 
       createdAt: new Date().toISOString(),
       method,
       handover: draft.handover,
+      packageName: pkg?.name,
       cassettes: payload.cassettes.map((c, i) => ({ number: c.number, id: selected[i], title: c.title, format: c.format })),
       extraCount: payload.extraCount,
     };
@@ -197,12 +182,12 @@ export function OrderPage({ api, route }: { api: CollectionApi; route: Route }) 
     });
     setOrderRef(createOrderRef());
     setMailOpened(false);
-    setStep(null);
+    setStepId(null);
     navigate(`/auftrag?gesendet=${encodeURIComponent(order.ref)}`);
   };
 
   const checkFinal = () => {
-    const found = validateFinal({ ...draft, selected });
+    const found = validateFinal({ ...draft, selected }, company);
     setErrors(found);
     if (Object.keys(found).length > 0) {
       document.getElementById(found.privacy ? 'auftrag-privacy' : 'auftrag-fehler')?.focus();
@@ -251,8 +236,9 @@ export function OrderPage({ api, route }: { api: CollectionApi; route: Route }) 
             <p className="eyebrow">Anfrage {sent.method === 'formular' ? 'gesendet' : 'per E-Mail verschickt'}</p>
             <h1 tabIndex={-1}>Danke! Deine Erinnerungen sind auf dem Weg in die Zukunft.</h1>
             <p className="page-head__lead">
-              Deine Auftragsnummer: <strong className="ref">{sent.ref}</strong>. Wir melden uns per E-Mail mit einem
-              unverbindlichen Angebot.
+              Deine Auftragsnummer: <strong className="ref">{sent.ref}</strong>
+              {sent.packageName && <> · Paket {sent.packageName}</>}. Wir melden uns per E-Mail mit einem unverbindlichen
+              Angebot.
             </p>
           </div>
         </div>
@@ -343,11 +329,11 @@ export function OrderPage({ api, route }: { api: CollectionApi; route: Route }) 
             </p>
             <h1 tabIndex={-1}>Wir digitalisieren deine Kassetten für dich.</h1>
             <p className="hero__lead">
-              Keine Geräte, keine Zeit oder einfach lieber in erfahrenen Händen? Wähle deine Kassetten direkt aus deiner
-              Sammlung, sag uns, wie sie zu uns kommen – fertig. Die Anfrage ist kostenlos und unverbindlich.
+              Keine Geräte, keine Zeit oder Lust auf mehr als eine Kopie? Wähle deine Kassetten direkt aus deiner Sammlung –
+              als Datei, aufgeräumt oder als Film mit Musik. Die Anfrage ist kostenlos und unverbindlich.
             </p>
             <div className="button-row">
-              <button type="button" className="btn btn--primary btn--large" onClick={() => setStep(0)}>
+              <button type="button" className="btn btn--primary btn--large" onClick={() => setStepId('kassetten')}>
                 {chosen.length > 0 ? `Anfrage fortsetzen (${chosen.length} ausgewählt)` : 'Anfrage starten'}
               </button>
               <a className="btn btn--secondary btn--large" href={href('/rettungshelfer')}>
@@ -382,6 +368,25 @@ export function OrderPage({ api, route }: { api: CollectionApi; route: Route }) 
               </p>
             </li>
           </ol>
+        </section>
+
+        <section className="section" aria-labelledby="pakete-titel">
+          <h2 id="pakete-titel">Mehr als eine Kopie</h2>
+          <p className="section__lead">
+            Von der 1:1-Digitalisierung bis zum Film mit eigens erstellter Musik – wähle, was aus deinen Erinnerungen werden soll.
+          </p>
+          <PackageCards
+            packages={company.packages}
+            onSelect={(id) => {
+              update({ packageId: id });
+              setStepId('kassetten');
+            }}
+          />
+          {company.voucher.enabled && (
+            <p className="voucher-link">
+              Lieber verschenken? <a href={href('/gutschein')}>Gutschein anfragen</a>
+            </p>
+          )}
         </section>
 
         <div className="two-col">
@@ -453,27 +458,27 @@ export function OrderPage({ api, route }: { api: CollectionApi; route: Route }) 
     <div className="order">
       <p className="breadcrumb">
         <button type="button" className="btn btn--link breadcrumb__button" onClick={goBack}>
-          <span aria-hidden="true">←</span> {step === 0 ? 'Zur Übersicht des Angebots' : `Zurück zu „${STEPS[step - 1]}“`}
+          <span aria-hidden="true">←</span> {step === 0 ? 'Zur Übersicht des Angebots' : `Zurück zu „${STEP_LABELS[steps[step - 1]].short}“`}
         </button>
       </p>
       <h1 tabIndex={-1}>Digitalisierung anfragen</h1>
 
       <section className="panel wizard" aria-labelledby="auftrag-schritt">
         <ol className="wizard__steps" aria-label="Fortschritt der Anfrage">
-          {STEPS.map((t, i) => (
-            <li key={t} className={i === step ? 'is-current' : i < step ? 'is-done' : ''} aria-current={i === step ? 'step' : undefined}>
+          {steps.map((id, i) => (
+            <li key={id} className={i === step ? 'is-current' : i < step ? 'is-done' : ''} aria-current={i === step ? 'step' : undefined}>
               <span className="wizard__dot" aria-hidden="true">
                 {i < step ? '✓' : i + 1}
               </span>
-              <span className="wizard__steplabel">{t}</span>
+              <span className="wizard__steplabel">{STEP_LABELS[id].short}</span>
             </li>
           ))}
         </ol>
         <p className="wizard__count">
-          Schritt {step + 1} von {STEPS.length}
+          Schritt {step + 1} von {steps.length}
         </p>
         <h2 id="auftrag-schritt" ref={stepHeading} tabIndex={-1}>
-          {['Welche Kassetten sollen wir digitalisieren?', 'Wie kommen die Kassetten zu uns?', 'Wie erreichen wir dich?', 'Prüfen und absenden'][step]}
+          {current && STEP_LABELS[current].title}
         </h2>
 
         {errorList.length > 0 && (
@@ -491,7 +496,7 @@ export function OrderPage({ api, route }: { api: CollectionApi; route: Route }) 
           </div>
         )}
 
-        {step === 0 && (
+        {current === 'kassetten' && (
           <div className="stack">
             {api.cassettes.length === 0 ? (
               <p>
@@ -570,7 +575,226 @@ export function OrderPage({ api, route }: { api: CollectionApi; route: Route }) 
           </div>
         )}
 
-        {step === 1 && (
+        {current === 'paket' && (
+          <div className="stack">
+            <PackageCards
+              packages={company.packages}
+              selected={draft.packageId}
+              error={errors.packageId}
+              onSelect={(id) => {
+                update({ packageId: id });
+                setErrors({});
+              }}
+            />
+            {company.extras.length > 0 && (
+              <ChoiceGroup
+                id="auftrag-extras"
+                legend="Extras dazu?"
+                hint="Optional – frei kombinierbar."
+                multiple
+                value={draft.extras}
+                onChange={(v) => update({ extras: v as string[] })}
+                options={company.extras.map((x) => ({ value: x.id, label: x.name, hint: x.price || undefined }))}
+              />
+            )}
+            {company.deadlineNote && <p className="notice notice--warm deadline-note">{company.deadlineNote}</p>}
+          </div>
+        )}
+
+        {current === 'film' && (
+          <div className="stack">
+            <ChoiceGroup
+              id="auftrag-occasion"
+              legend="Für welchen Anlass ist der Film?"
+              layout="chips"
+              value={draft.film.occasion}
+              error={errors.occasion}
+              onChange={(v) => updateFilm({ occasion: v as string })}
+              options={company.film.occasions.map((o) => ({ value: o, label: o }))}
+            />
+            <div className="form-grid">
+              <TextField
+                id="auftrag-forWhom"
+                label="Für wen ist der Film?"
+                optional
+                value={draft.film.forWhom}
+                onChange={(v) => updateFilm({ forWhom: v })}
+                hint="Zum Beispiel „Oma Maria zum 80er“ oder „unsere Kinder“."
+                maxLength={200}
+              />
+              <TextField
+                id="auftrag-date"
+                label="Bis wann brauchst du den Film?"
+                optional
+                value={draft.film.date}
+                onChange={(v) => updateFilm({ date: v })}
+                hint="Ein Datum oder z. B. „vor Weihnachten“."
+                maxLength={60}
+              />
+            </div>
+            <ChoiceGroup
+              id="auftrag-length"
+              legend="Wie lang soll der Film ungefähr werden?"
+              layout="chips"
+              value={draft.film.length}
+              onChange={(v) => updateFilm({ length: v as string })}
+              options={company.film.lengths.map((o) => ({ value: o, label: o }))}
+            />
+            <TextField
+              id="auftrag-filmMessage"
+              label="Persönliche Botschaft"
+              optional
+              multiline
+              rows={4}
+              value={draft.film.message}
+              error={errors.filmMessage}
+              onChange={(v) => updateFilm({ message: v })}
+              hint="Ein Gruß, ein Dank, ein Glückwunsch – so, wie du es sagen würdest."
+            />
+            {draft.film.message.trim() && (
+              <ChoiceGroup
+                id="auftrag-messageStyle"
+                legend="Wie soll die Botschaft erscheinen?"
+                layout="chips"
+                value={draft.film.messageStyle}
+                onChange={(v) => updateFilm({ messageStyle: v as string })}
+                options={company.film.messageStyles.filter((m) => !/^ohne/i.test(m)).map((o) => ({ value: o, label: o }))}
+              />
+            )}
+            <div className="check-row">
+              <input type="checkbox" id="auftrag-photos" checked={draft.film.photos} onChange={(e) => updateFilm({ photos: e.target.checked })} />
+              <label htmlFor="auftrag-photos">Ich möchte auch Fotos einbauen lassen (wir besprechen mit dir, wie du sie uns schickst)</label>
+            </div>
+            {chosen.some((c) => (c.moments ?? []).length > 0) ? (
+              <div className="moments-summary">
+                <h3>Deine Lieblingsmomente kommen mit</h3>
+                <ul>
+                  {chosen.flatMap((c) =>
+                    (c.moments ?? []).map((m) => (
+                      <li key={m.id}>
+                        <strong>{c.title}:</strong> {m.time && `${m.time} – `}
+                        {m.text}
+                      </li>
+                    )),
+                  )}
+                </ul>
+              </div>
+            ) : (
+              <p className="field__hint">
+                Tipp: In deiner Sammlung kannst du bei jeder Kassette Lieblingsmomente notieren. Sie werden automatisch mitgeschickt.
+              </p>
+            )}
+          </div>
+        )}
+
+        {current === 'musik' && (
+          <div className="stack">
+            <p className="notice notice--info music-note">{company.music.note}</p>
+            <ChoiceGroup
+              id="auftrag-moods"
+              legend="Welche Stimmung soll die Musik haben?"
+              hint="Mehrfachauswahl möglich."
+              layout="chips"
+              multiple
+              value={draft.music.moods}
+              error={errors.moods}
+              onChange={(v) => updateMusic({ moods: v as string[] })}
+              options={company.music.moods.map((o) => ({ value: o, label: o }))}
+            />
+            <ChoiceGroup
+              id="auftrag-genre"
+              legend="Welcher Musikstil passt?"
+              layout="chips"
+              value={draft.music.genre}
+              onChange={(v) => updateMusic({ genre: v as string })}
+              options={[...company.music.genres, 'Überrascht mich'].map((o) => ({ value: o, label: o }))}
+            />
+            <ChoiceGroup
+              id="auftrag-tempo"
+              legend="Tempo"
+              layout="chips"
+              value={draft.music.tempo}
+              onChange={(v) => updateMusic({ tempo: v as string })}
+              options={company.music.tempos.map((o) => ({ value: o, label: o }))}
+            />
+            <ChoiceGroup
+              id="auftrag-instruments"
+              legend="Lieblingsinstrumente"
+              hint="Optional, Mehrfachauswahl möglich."
+              layout="chips"
+              multiple
+              value={draft.music.instruments}
+              onChange={(v) => updateMusic({ instruments: v as string[] })}
+              options={company.music.instruments.map((o) => ({ value: o, label: o }))}
+            />
+            <ChoiceGroup
+              id="auftrag-vocals"
+              legend="Gesang"
+              value={draft.music.vocals}
+              error={errors.vocals}
+              onChange={(v) => updateMusic({ vocals: v as MusicBrief['vocals'] })}
+              options={company.music.vocals.map((o) => ({
+                value: o.id,
+                label: o.label,
+                hint: o.id === 'persoenlich' && company.music.personalSongPrice ? `${o.hint} Aufpreis: ${company.music.personalSongPrice}` : o.hint,
+              }))}
+            />
+            {draft.music.vocals && draft.music.vocals !== 'instrumental' && (
+              <ChoiceGroup
+                id="auftrag-language"
+                legend="Sprache des Gesangs"
+                layout="chips"
+                value={draft.music.language}
+                onChange={(v) => updateMusic({ language: v as string })}
+                options={company.music.languages.map((o) => ({ value: o, label: o }))}
+              />
+            )}
+            {draft.music.vocals === 'persoenlich' && (
+              <div className="lyrics" id="auftrag-lyrics" tabIndex={-1}>
+                <h3>Dein persönliches Lied</h3>
+                {errors.lyrics && <p className="field__error">{errors.lyrics}</p>}
+                <TextField
+                  id="auftrag-names"
+                  label="Wer kommt im Lied vor?"
+                  value={draft.music.names}
+                  onChange={(v) => updateMusic({ names: v })}
+                  hint="Namen, Spitznamen, z. B. „Oma Resi und Opa Franz“."
+                  maxLength={200}
+                />
+                <TextField
+                  id="auftrag-story"
+                  label="Worum soll es gehen?"
+                  multiline
+                  rows={4}
+                  value={draft.music.story}
+                  onChange={(v) => updateMusic({ story: v })}
+                  hint="Ein paar Erinnerungen, Eigenheiten oder Geschichten – je persönlicher, desto schöner."
+                  maxLength={1500}
+                />
+                <TextField
+                  id="auftrag-words"
+                  label="Worte oder Sätze, die vorkommen sollen"
+                  optional
+                  value={draft.music.words}
+                  onChange={(v) => updateMusic({ words: v })}
+                  maxLength={300}
+                />
+              </div>
+            )}
+            <TextField
+              id="auftrag-musicNotes"
+              label="Sonst noch Wünsche zur Musik?"
+              optional
+              multiline
+              value={draft.music.notes}
+              onChange={(v) => updateMusic({ notes: v })}
+              hint="Beschreib in eigenen Worten, wie es klingen soll – z. B. „wie ein Abend auf der Terrasse“."
+              maxLength={800}
+            />
+          </div>
+        )}
+
+        {current === 'uebergabe' && (
           <div className="stack">
             <fieldset className="choice-group" id="auftrag-handover" tabIndex={-1}>
               <legend>Übergabe wählen</legend>
@@ -645,7 +869,7 @@ export function OrderPage({ api, route }: { api: CollectionApi; route: Route }) 
           </div>
         )}
 
-        {step === 2 && (
+        {current === 'kontakt' && (
           <div className="form-grid">
             <TextField id="auftrag-name" label="Name" value={draft.contact.name} onChange={(v) => updateContact({ name: v })} error={errors.name} autoComplete="name" />
             <TextField
@@ -709,7 +933,7 @@ export function OrderPage({ api, route }: { api: CollectionApi; route: Route }) 
           </div>
         )}
 
-        {step === 3 && (
+        {current === 'absenden' && (
           <div className="stack">
             {issues.length > 0 && (
               <div className="notice notice--warm" role="note">
@@ -734,6 +958,41 @@ export function OrderPage({ api, route }: { api: CollectionApi; route: Route }) 
                   {extra > 0 && <p>+ {extra} weitere, noch nicht erfasste</p>}
                 </dd>
               </div>
+              {pkg && (
+                <div>
+                  <dt>Paket</dt>
+                  <dd>
+                    {pkg.name}
+                    {pkg.price && <span className="muted"> · {pkg.price}</span>}
+                    {payload.extras.length > 0 && (
+                      <>
+                        <br />
+                        Extras: {payload.extras.join(', ')}
+                      </>
+                    )}
+                  </dd>
+                </div>
+              )}
+              {payload.film && (
+                <div>
+                  <dt>Film</dt>
+                  <dd>
+                    {[payload.film.occasion, payload.film.forWhom && `für ${payload.film.forWhom}`, payload.film.length, payload.film.date && `bis ${payload.film.date}`]
+                      .filter(Boolean)
+                      .join(' · ')}
+                    {payload.film.message && <span className="block pre-line">„{payload.film.message}“</span>}
+                  </dd>
+                </div>
+              )}
+              {payload.music && (
+                <div>
+                  <dt>Musik</dt>
+                  <dd>
+                    {[payload.music.moods.join(', '), payload.music.genre, payload.music.tempo, payload.music.vocals].filter(Boolean).join(' · ')}
+                    {payload.music.names && <span className="block">Im Lied: {payload.music.names}</span>}
+                  </dd>
+                </div>
+              )}
               <div>
                 <dt>Übergabe</dt>
                 <dd>
@@ -763,32 +1022,24 @@ export function OrderPage({ api, route }: { api: CollectionApi; route: Route }) 
               )}
             </dl>
             <div className="button-row">
-              {[0, 1, 2].map((s) => (
-                <button key={s} type="button" className="btn btn--small btn--secondary" onClick={() => setStep(s)}>
-                  {['Kassetten', 'Übergabe', 'Kontakt'][s]} ändern
-                </button>
-              ))}
+              {steps
+                .filter((id) => id !== 'absenden')
+                .map((id) => (
+                  <button key={id} type="button" className="btn btn--small btn--secondary" onClick={() => goTo(id)}>
+                    {STEP_LABELS[id].short} ändern
+                  </button>
+                ))}
             </div>
 
-            <div className={`check-row ${errors.privacy ? 'check-row--error' : ''}`}>
-              <input
-                type="checkbox"
-                id="auftrag-privacy"
-                checked={draft.privacyAccepted}
-                onChange={(e) => {
-                  update({ privacyAccepted: e.target.checked });
-                  setErrors((er) => ({ ...er, privacy: undefined }));
-                }}
-              />
-              <label htmlFor="auftrag-privacy">
-                Ich bin einverstanden, dass {company.companyName} meine Angaben zur Bearbeitung dieser Anfrage verwendet. Mehr dazu in
-                den{' '}
-                <a href="../datenschutz.html" target="_blank" rel="noopener">
-                  Datenschutzhinweisen
-                </a>
-                .
-              </label>
-            </div>
+            <PrivacyCheck
+              id="auftrag-privacy"
+              checked={draft.privacyAccepted}
+              error={errors.privacy}
+              onChange={(v) => {
+                update({ privacyAccepted: v });
+                setErrors((er) => ({ ...er, privacy: undefined }));
+              }}
+            />
             <p className="field__hint">
               Die Anfrage ist unverbindlich und kostenlos. Ein Auftrag kommt erst zustande, wenn du unser Angebot annimmst.
             </p>
@@ -862,7 +1113,7 @@ export function OrderPage({ api, route }: { api: CollectionApi; route: Route }) 
           </div>
         )}
 
-        {step < 3 && (
+        {current !== 'absenden' && (
           <div className="wizard__nav">
             {step > 0 && (
               <button type="button" className="btn btn--secondary btn--large" onClick={goBack}>

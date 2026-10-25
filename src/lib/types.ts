@@ -13,6 +13,16 @@ export const CHECKLIST_IDS = ['geprueft', 'benannt', 'dokumentiert', 'kopie'] as
 export type ChecklistId = (typeof CHECKLIST_IDS)[number];
 export type Checklist = Record<ChecklistId, boolean>;
 
+/** Ein Lieblingsmoment auf der Kassette – Grundlage für Erinnerungs- und Anlassfilme. */
+export interface Moment {
+  id: string;
+  /** Ungefähre Stelle, frei formuliert, z. B. „ca. 42 Min“ oder „Ende Seite A“. */
+  time: string;
+  text: string;
+}
+
+export const MOMENT_LIMITS = { time: 30, text: 200, count: 50 } as const;
+
 export interface Cassette {
   id: string;
   title: string;
@@ -25,6 +35,7 @@ export interface Cassette {
   notes: string;
   status: StatusId;
   checklist: Checklist;
+  moments: Moment[];
   /** Kennzeichnet ausdrücklich geladene Beispieldaten. */
   sample?: boolean;
   /** Auftragsnummer, falls die Kassette bei Kassetten retten angefragt wurde. */

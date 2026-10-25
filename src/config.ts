@@ -8,6 +8,33 @@
 
 export type HandoverId = 'abholung' | 'versand' | 'abgabe';
 
+export interface PackageConfig {
+  id: string;
+  name: string;
+  tagline: string;
+  includes: string[];
+  /** Preisangabe, z. B. „ab 19 € pro Kassette“. Leer = „Preis auf Anfrage“. */
+  price: string;
+  /** Fragt im Anfrage-Ablauf nach Anlass, Länge und Botschaft. */
+  film: boolean;
+  /** Fragt im Anfrage-Ablauf nach Musikwünschen. */
+  music: boolean;
+  /** Hervorgehoben („Beliebt“). */
+  highlight?: boolean;
+}
+
+export interface ExtraConfig {
+  id: string;
+  name: string;
+  price: string;
+}
+
+export interface VocalOption {
+  id: 'instrumental' | 'gesang' | 'persoenlich';
+  label: string;
+  hint: string;
+}
+
 export interface CompanyConfig {
   brandName: string;
   companyName: string;
@@ -52,6 +79,30 @@ export interface CompanyConfig {
     extraFields: Record<string, string>;
   };
 
+  /** Pakete – von der 1:1-Kopie bis zum Anlassfilm. Reihenfolge = Anzeige. */
+  packages: PackageConfig[];
+  /** Zusätzliche Leistungen, frei kombinierbar. */
+  extras: ExtraConfig[];
+  /** Fragen für Erinnerungs- und Anlassfilme. */
+  film: { occasions: string[]; lengths: string[]; messageStyles: string[] };
+  /** Musik nach Maß: Auswahlmöglichkeiten im Anfrage-Ablauf. */
+  music: {
+    /** Erklärt Herkunft und Nutzungsrechte der Musik – bitte selbst prüfen und anpassen. */
+    note: string;
+    moods: string[];
+    genres: string[];
+    tempos: string[];
+    instruments: string[];
+    vocals: VocalOption[];
+    languages: string[];
+    /** Aufpreis für ein persönliches Lied mit eigenem Text, z. B. „+ 49 €“. Leer = keine Angabe. */
+    personalSongPrice: string;
+  };
+  /** Gutscheine zum Verschenken. */
+  voucher: { enabled: boolean; values: string[]; delivery: string[]; note: string };
+  /** Optionaler Hinweis, z. B. „Für Lieferung vor Weihnachten bitte bis 1. Dezember anfragen.“ Leer = kein Hinweis. */
+  deadlineNote: string;
+
   /** Optionaler Unterstützen-Link (z. B. PayPal.me, Ko-fi). Leer = kein Button. */
   support: { url: string; label: string; text: string };
 
@@ -94,6 +145,76 @@ export const company: CompanyConfig = {
     endpoint: '',
     extraFields: {},
   },
+  packages: [
+    {
+      id: 'digital',
+      name: 'Digital',
+      tagline: 'Deine Kassetten 1:1 als Datei',
+      includes: ['Die komplette Aufnahme als Datei', 'Läuft auf Fernseher, Computer, Handy und Tablet', 'Originalkassetten zurück'],
+      price: '[ab … € pro Kassette]',
+      film: false,
+      music: false,
+    },
+    {
+      id: 'digital-plus',
+      name: 'Digital Plus',
+      tagline: 'Aufgeräumt und verbessert',
+      includes: ['Alles aus „Digital“', 'Kapitel mit Titel und Datum', 'Bild und Ton verbessert, leere Stellen entfernt'],
+      price: '[ab … € pro Kassette]',
+      film: false,
+      music: false,
+    },
+    {
+      id: 'erinnerungsfilm',
+      name: 'Erinnerungsfilm',
+      tagline: 'Die schönsten Momente als Kurzfilm',
+      includes: ['Die besten Szenen aus einer oder mehreren Kassetten', 'Musik nach deinen Wünschen – eigens für euch erstellt', 'Titel, Vor- und Abspann'],
+      price: '[ab … €]',
+      film: true,
+      music: true,
+      highlight: true,
+    },
+    {
+      id: 'anlassfilm',
+      name: 'Anlassfilm',
+      tagline: 'Für Geburtstag, Hochzeit, Jubiläum – oder einfach so',
+      includes: ['Alte Aufnahmen und Fotos zu einem Film verbunden', 'Persönliche Botschaft als Text oder gesprochen', 'Auf Wunsch ein eigenes Lied über euch'],
+      price: '[ab … €]',
+      film: true,
+      music: true,
+    },
+  ],
+  extras: [
+    { id: 'geschenkkarte', name: 'Geschenkkarte mit QR-Code zum Film', price: '[… €]' },
+    { id: 'usb-box', name: 'USB-Stick in einer Geschenkbox', price: '[… €]' },
+    { id: 'express', name: 'Express-Bearbeitung', price: '[… €]' },
+  ],
+  film: {
+    occasions: ['Geburtstag', 'Hochzeit', 'Hochzeitstag oder Jubiläum', 'Taufe oder Geburt', 'Weihnachten', 'Abschied und Erinnerung', 'Einfach so'],
+    lengths: ['Etwa 3 Minuten', 'Etwa 5 Minuten', 'Etwa 8 Minuten', 'Entscheidet ihr'],
+    messageStyles: ['Als Texteinblendung', 'Von einer Sprecherstimme gelesen', 'Ohne Botschaft'],
+  },
+  music: {
+    note: 'Die Musik zu deinem Film wird von uns eigens erstellt – komponiert oder mit kommerziell lizenzierten Werkzeugen erzeugt. Du darfst den fertigen Film privat nutzen und mit Familie und Freunden teilen.',
+    moods: ['Feierlich', 'Fröhlich', 'Berührend', 'Ruhig', 'Nostalgisch', 'Romantisch', 'Beschwingt', 'Groß und episch'],
+    genres: ['Klavier solo', 'Akustisch mit Gitarre', 'Orchester', 'Pop', 'Jazz und Swing', 'Volksmusik und Schlager', 'Elektronisch und entspannt', 'Kinderlied'],
+    tempos: ['Ruhig', 'Mittel', 'Lebhaft'],
+    instruments: ['Klavier', 'Gitarre', 'Streicher', 'Bläser', 'Akkordeon', 'Schlagzeug', 'Synthesizer', 'Glockenspiel'],
+    vocals: [
+      { id: 'instrumental', label: 'Nur Musik', hint: 'Ohne Gesang – die Bilder stehen im Vordergrund.' },
+      { id: 'gesang', label: 'Mit Gesang', hint: 'Ein passendes Lied mit allgemeinem Text.' },
+      { id: 'persoenlich', label: 'Persönliches Lied', hint: 'Ein Lied mit Text über euch – mit Namen und Geschichten.' },
+    ],
+    languages: ['Deutsch', 'Österreichischer Dialekt', 'Englisch'],
+    personalSongPrice: '[+ … €]',
+  },
+  voucher: {
+    enabled: true,
+    values: ['[50 €]', '[100 €]', '[150 €]'],
+    delivery: ['Als PDF per E-Mail', 'Gedruckte Karte per Post'],
+    note: 'Der Gutschein gilt für alle Pakete und Extras. Wir schicken dir nach der Anfrage die Zahlungsdetails.',
+  },
+  deadlineNote: '',
   support: {
     url: '',
     label: 'Projekt unterstützen',
@@ -122,6 +243,8 @@ export function configIssues(c: CompanyConfig = company): string[] {
   if (c.handover.includes('abgabe') && isPlaceholder(c.openingHours)) issues.push('Zeiten für die persönliche Abgabe');
   if (Object.values(c.imprint).some(isPlaceholder)) issues.push('Impressum');
   if (isPlaceholder(c.region)) issues.push('Region');
+  if (c.packages.some((p) => isPlaceholder(p.price)) || c.extras.some((e) => isPlaceholder(e.price))) issues.push('Paketpreise');
+  if (c.voucher.enabled && c.voucher.values.some(isPlaceholder)) issues.push('Gutscheinwerte');
   if (isPlaceholder(c.about.name) || isPlaceholder(c.about.text)) issues.push('„Über uns“');
   if (isPlaceholder(c.privacyContact)) issues.push('Datenschutz-Kontakt');
   return issues;

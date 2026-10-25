@@ -10,6 +10,7 @@ import { HelperPage } from './pages/HelperPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { OrderPage } from './pages/OrderPage';
 import { OverviewPage } from './pages/OverviewPage';
+import { VoucherPage } from './pages/VoucherPage';
 
 const APP_NAME = 'Kassetten retten';
 
@@ -43,6 +44,9 @@ export function App() {
   } else if (first === 'auftrag' && !second) {
     page = <OrderPage api={api} route={route} />;
     title = 'Digitalisieren lassen';
+  } else if (first === 'gutschein' && !second) {
+    page = <VoucherPage route={route} />;
+    title = 'Gutschein anfragen';
   } else if ((first === 'impressum' || first === 'datenschutz') && !second) {
     // Impressum und Datenschutz sind eigene Seiten neben der App.
     window.location.replace(`../${first}.html`);

@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import { BackupChecklist } from '../components/BackupChecklist';
 import { CassetteArt } from '../components/CassetteArt';
 import { ConfirmDialog } from '../components/ConfirmDialog';
+import { MomentsPanel } from '../components/MomentsPanel';
 import { StatusBadge } from '../components/StatusBadge';
 import { useToast } from '../components/Toast';
 import type { CollectionApi } from '../hooks/useCollection';
@@ -136,6 +137,12 @@ export function DetailPage({ api, id }: { api: CollectionApi; id: string }) {
               </p>
             </div>
           </section>
+
+          <MomentsPanel
+            cassette={c}
+            onAdd={(time, text) => api.addMoment(c.id, time, text)}
+            onRemove={(momentId) => api.removeMoment(c.id, momentId)}
+          />
         </div>
 
         <BackupChecklist

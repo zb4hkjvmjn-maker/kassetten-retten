@@ -146,7 +146,27 @@ Alle Firmenangaben stehen an einer Stelle. Werte in `[eckigen Klammern]` sind Pl
 
 Die App kostet im Betrieb nichts: GitHub Pages ist kostenlos, es gibt keinen Server. Sie finanziert sich als Marketing über die Anfragen. Ein Unterstützen-Link (`support.url`, z. B. PayPal.me oder Ko-fi) ist vorbereitet und erscheint nur, wenn er gesetzt ist – in der Fußzeile, nach einer gesicherten Kassette und nach einer Anfrage.
 
-## Projektstruktur
+## Pakete, Musik nach Maß und Gutscheine
+
+Alles wird in `src/config.ts` gepflegt:
+
+| Feld | Bedeutung |
+| --- | --- |
+| `packages` | Pakete (Name, Kurztext, Leistungen, Preis). `film: true` fragt Anlass, Länge und Botschaft ab, `music: true` die Musikwünsche. `highlight` markiert ein Paket als „Beliebt“. |
+| `extras` | Zusatzleistungen wie Geschenkkarte mit QR-Code oder USB-Stick in Geschenkbox |
+| `film` | Anlässe, Längen und Arten der Botschaft |
+| `music` | Stimmungen, Stile, Tempi, Instrumente, Gesang (nur Musik / mit Gesang / persönliches Lied), Sprachen, Aufpreis für ein persönliches Lied und der Hinweis zu Herkunft und Rechten der Musik |
+| `voucher` | Gutscheinwerte, Zustellwege, Hinweis zur Bezahlung; `enabled: false` blendet Gutscheine überall aus |
+| `deadlineNote` | z. B. „Für Lieferung vor Weihnachten bitte bis 1. Dezember anfragen.“ – erscheint auf Startseite und bei der Paketwahl |
+
+**Ablauf in der App:** Bei jeder Kassette lassen sich **Lieblingsmomente** notieren („ca. 42 Min – Opa tanzt“). Die Anfrage passt ihre Schritte dem Paket an: Kassetten → Paket → (Film) → (Musik) → Übergabe → Kontakt → Absenden. Lieblingsmomente, Film- und Musikwünsche stehen vollständig in der Anfrage. Gutscheine werden unter `app/#/gutschein` angefragt.
+
+**Musikrechte (bitte prüfen):** Der Text `music.note` sagt Kundinnen und Kunden, dass die Musik eigens erstellt wird und der Film privat genutzt und geteilt werden darf. Prüfe vorher:
+
+- bei KI-erzeugter Musik die Nutzungsbedingungen des Werkzeugs (kommerzielle Nutzung, Weitergabe an Kunden),
+- bei eigenen Kompositionen, ob du Mitglied einer Verwertungsgesellschaft (z. B. AKM) bist – dann sind die Rechte womöglich dort hinterlegt,
+- und halte die Nutzungsrechte für Kunden in deinen AGB fest.
+
 
 ```
 index.html               Startseite (Vorlage)
@@ -168,9 +188,12 @@ src/
     StorageNotice.tsx    Hinweis zur lokalen Speicherung
     Toast.tsx            Kurze Rückmeldungen (auch für Screenreader)
     ServiceTeaser.tsx    Dezentes Angebot „Digitalisieren lassen“
+    PackageCards.tsx     Paketkarten (Übersicht und Auswahl)
+    MomentsPanel.tsx     Lieblingsmomente je Kassette
+    FormBits.tsx         Gemeinsame Formular-Bausteine
   config.ts              Firmendaten, Angebot, Übermittlung, Impressum, Domain
   landing/               Startseite: Styles, kleines Skript, Vorlagen-Renderer (render.ts)
-  pages/                 Übersicht, Sammlung, Detail, Formular, Rettungshelfer, Anfrage
+  pages/                 Übersicht, Sammlung, Detail, Formular, Rettungshelfer, Anfrage, Gutschein
   hooks/                 Hash-Routing, Sammlung mit Speicherung, gespeicherter Zustand
   lib/                   Reine Logik ohne React – mit Tests (*.test.ts)
 .github/workflows/deploy.yml   Build und Veröffentlichung

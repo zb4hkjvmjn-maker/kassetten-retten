@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{{brandName}} – VHS, Camcorder- und Audiokassetten digitalisieren</title>
-    <meta name="description" content="Wir digitalisieren VHS-, VHS-C-, Video8-, Hi8-, MiniDV- und Audiokassetten – in {{regionPlain}} mit Abholung, per Post oder zum Vorbeibringen. Unverbindlich anfragen oder die Sammlung kostenlos selbst ordnen." />
+    <meta name="description" content="Wir digitalisieren VHS-, VHS-C-, Video8-, Hi8-, MiniDV- und Audiokassetten in {{regionPlain}} – als Datei oder als Erinnerungsfilm mit eigens erstellter Musik. Mit Abholung, per Post oder zum Vorbeibringen. Auch als Gutschein." />
     <meta name="theme-color" content="#f8f1e4" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     {{{canonical}}}
@@ -29,8 +29,9 @@
           <span>{{brandName}}</span>
         </a>
         <nav class="top__nav" aria-label="Seitenbereiche">
-          <a href="#ablauf">Ablauf</a>
-          <a href="#preise">Formate &amp; Preise</a>
+          <a href="#pakete">Pakete</a>
+          <a href="#musik">Musik</a>
+          {{{voucherNav}}}
           <a href="#ueber-uns">Über uns</a>
           <a href="#fragen">Fragen</a>
         </nav>
@@ -47,8 +48,8 @@
             <h1>Deine Erinnerungen verdienen eine&nbsp;Zukunft.</h1>
             <p class="lead">
               Hochzeit, Kinderstimmen, der Urlaub von damals: Wir holen deine VHS-, Camcorder- und Audiokassetten
-              aus dem Schrank – und bringen sie auf Fernseher, Handy und Tablet. Damit ihr sie wieder gemeinsam ansehen
-              und an Kinder und Enkel weitergeben könnt.
+              aus dem Schrank – und bringen sie auf Fernseher, Handy und Tablet. Als 1:1-Kopie oder als Erinnerungsfilm
+              mit eigens erstellter Musik, für euch oder als Geschenk.
             </p>
             <div class="actions">
               <a class="btn btn--primary btn--lg" href="app/#/auftrag">Unverbindlich anfragen</a>
@@ -146,27 +147,55 @@
         </div>
       </section>
 
-      <!-- Preise -->
-      <section class="section section--tint" id="preise" aria-labelledby="preise-titel">
+      <!-- Pakete -->
+      <section class="section section--tint" id="pakete" aria-labelledby="pakete-titel">
+        <div class="wrap">
+          <p class="kicker">Pakete</p>
+          <h2 id="pakete-titel">Mehr als eine Kopie</h2>
+          <p class="section-lead">
+            Manche wollen einfach ihre Kassetten als Datei. Andere wünschen sich einen Film, bei dem allen am Tisch die
+            Tränen kommen. Du entscheidest – und bekommst vorher immer ein unverbindliches Angebot.
+          </p>
+          {{{deadlineNote}}}
+          <ul class="pkgs">{{{packagesCards}}}</ul>
+          {{{extrasList}}}
+          {{{pricing}}}
+        </div>
+      </section>
+
+      <!-- Musik -->
+      <section class="section music" id="musik" aria-labelledby="musik-titel">
         <div class="wrap split">
           <div>
-            <p class="kicker">Formate &amp; Preise</p>
-            <h2 id="preise-titel">Faire Preise, keine Überraschungen</h2>
+            <p class="kicker">Musik nach Maß</p>
+            <h2 id="musik-titel">Deine Erinnerungen bekommen ihren eigenen Soundtrack</h2>
             <p>
-              Jede Sammlung ist anders: Manche haben drei Kassetten im Schrank, andere einen ganzen Karton. Deshalb
-              bekommst du immer zuerst ein Angebot – und entscheidest dann in Ruhe.
+              Für Erinnerungs- und Anlassfilme erstellen wir die Musik eigens für dich. Du bestimmst, wie sie klingt – von
+              ruhigem Klavier bis zum fröhlichen Volksmusik-Stück. Auf Wunsch wird daraus sogar ein
+              <strong>persönliches Lied mit Text über euch</strong>{{{personalSong}}}.
             </p>
-            {{{pricing}}}
-            <a class="btn btn--primary" href="app/#/auftrag">Angebot anfragen</a>
+            <p class="muted">{{{musicNote}}}</p>
+            <a class="btn btn--primary" href="{{musicHref}}">Film mit Musik anfragen</a>
           </div>
-          <div class="card">
-            <h3>Was du bekommst</h3>
-            <ul class="checks">
-              <li>Deine Aufnahmen als Dateien, die auf Fernseher, Computer, Handy und Tablet laufen</li>
-              <li>Lieferung per {{{deliveryText}}}</li>
-              <li>Deine Originalkassetten zurück</li>
-              <li>Einen Begleitzettel mit Nummern, damit nichts verwechselt wird</li>
-            </ul>
+          <div class="mixer" aria-label="Was du an der Musik einstellen kannst">
+            <div class="mixer__row">
+              <h3>Stimmung</h3>
+              <ul class="tags">{{{musicMoods}}}</ul>
+            </div>
+            <div class="mixer__row">
+              <h3>Stil</h3>
+              <ul class="tags">{{{musicGenres}}}</ul>
+            </div>
+            <div class="mixer__row">
+              <h3>Instrumente</h3>
+              <ul class="tags">{{{musicInstruments}}}</ul>
+            </div>
+            <div class="mixer__row mixer__row--sliders" aria-hidden="true">
+              <span><i style="--h: 40%"></i>Tempo</span>
+              <span><i style="--h: 75%"></i>Gefühl</span>
+              <span><i style="--h: 55%"></i>Gesang</span>
+              <span><i style="--h: 85%"></i>Text</span>
+            </div>
           </div>
         </div>
       </section>
@@ -266,6 +295,8 @@
         </div>
       </section>
 
+      {{{voucherSection}}}
+
       <!-- Fragen -->
       <section class="section" id="fragen" aria-labelledby="fragen-titel">
         <div class="wrap faq">
@@ -306,6 +337,7 @@
         <ul class="foot__links">
           <li><a href="app/#/auftrag">Anfragen</a></li>
           <li><a href="app/">Kostenlose App</a></li>
+          <li><a href="app/#/gutschein">Gutschein</a></li>
           <li><a href="impressum.html">Impressum</a></li>
           <li><a href="datenschutz.html">Datenschutz</a></li>
           {{{supportLink}}}

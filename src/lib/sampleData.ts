@@ -1,8 +1,9 @@
 import { createCassette } from './collection';
+import { createId } from './id';
 import type { Cassette, CassetteInput, Checklist } from './types';
 
 /** Erfundene Beispielkassetten – werden nur über die ausdrücklich gekennzeichnete Aktion geladen. */
-const SAMPLES: (CassetteInput & { checklist?: Partial<Checklist> })[] = [
+const SAMPLES: (CassetteInput & { checklist?: Partial<Checklist>; moments?: { time: string; text: string }[] })[] = [
   {
     title: 'Beispiel: Sommerurlaub am See',
     format: 'vhs',
@@ -12,6 +13,10 @@ const SAMPLES: (CassetteInput & { checklist?: Partial<Checklist> })[] = [
     location: 'Wohnzimmerschrank, untere Schublade',
     notes: 'Erfundener Beispieleintrag zum Ausprobieren.',
     status: 'erfasst',
+    moments: [
+      { time: 'ca. 12 Min', text: 'Erster Sprung vom Steg' },
+      { time: 'ca. 40 Min', text: 'Alle singen am Lagerfeuer' },
+    ],
   },
   {
     title: 'Beispiel: Kinderlieder zum Mitsingen',
@@ -47,8 +52,13 @@ const SAMPLES: (CassetteInput & { checklist?: Partial<Checklist> })[] = [
 ];
 
 export function createSampleCassettes(now = new Date()): Cassette[] {
-  return SAMPLES.map(({ checklist, ...input }, i) => {
+  return SAMPLES.map(({ checklist, moments, ...input }, i) => {
     const c = createCassette(input, new Date(now.getTime() - i * 1000));
-    return { ...c, sample: true, checklist: { ...c.checklist, ...checklist } };
+    return {
+      ...c,
+      sample: true,
+      checklist: { ...c.checklist, ...checklist },
+      moments: (moments ?? []).map((m) => ({ ...m, id: createId() })),
+    };
   });
 }

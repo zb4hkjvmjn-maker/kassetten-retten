@@ -5,7 +5,18 @@ import { createCassette, emptyInput } from './collection';
 import {
   buildPayload,
   createOrderRef,
+  createVoucherRef,
   EMPTY_DRAFT,
+  EMPTY_FILM,
+  EMPTY_MUSIC,
+  EMPTY_VOUCHER,
+  normalizeDraft,
+  stepsFor,
+  validateFilm,
+  validateMusic,
+  validatePackage,
+  validateVoucher,
+  voucherText,
   mailtoLink,
   orderText,
   parseExtraCount,
@@ -93,7 +104,76 @@ describe('Auftrag', () => {
       privacyContact: 'datenschutz@firma.at',
       region: 'Wien',
       about: { name: 'Max', role: 'Gründer', text: 'Ich rette Kassetten.' },
+      packages: company.packages.map((p) => ({ ...p, price: 'ab 20 €' })),
+      extras: company.extras.map((e) => ({ ...e, price: '10 €' })),
+      voucher: { ...company.voucher, values: ['50 €'] },
     };
     assert.deepEqual(configIssues(filled), []);
+  });
+});
+
+describe('Pakete, Film und Musik', () => {
+  it('fragt Film und Musik nur bei passenden Paketen ab', () => {
+    assert.deepEqual(stepsFor(company, draft({ packageId: 'digital' })), ['kassetten', 'paket', 'uebergabe', 'kontakt', 'absenden']);
+    assert.deepEqual(stepsFor(company, draft({ packageId: 'anlassfilm' })), [
+      'kassetten',
+      'paket',
+      'film',
+      'musik',
+      'uebergabe',
+      'kontakt',
+      'absenden',
+    ]);
+  });
+
+  it('prüft Paket, Anlass und Musikwünsche', () => {
+    assert.ok(validatePackage(draft({}), company).packageId);
+    assert.ok(validateFilm(draft({})).occasion);
+    const m = validateMusic(draft({}));
+    assert.ok(m.moods && m.vocals);
+    const personal = validateMusic(draft({ music: { ...EMPTY_MUSIC, moods: ['Fröhlich'], vocals: 'persoenlich' } }));
+    assert.ok(personal.lyrics);
+    assert.deepEqual(validateMusic(draft({ music: { ...EMPTY_MUSIC, moods: ['Fröhlich'], vocals: 'persoenlich', names: 'Anna und Paul' } })), {});
+  });
+
+  it('übernimmt Paket, Wünsche und Lieblingsmomente in die Anfrage', () => {
+    const c = { ...a, moments: [{ id: 'm1', time: 'ca. 42 Min', text: 'Opa tanzt' }] };
+    const p = buildPayload(
+      draft({
+        selected: [c.id],
+        packageId: 'anlassfilm',
+        extras: ['usb-box'],
+        film: { ...EMPTY_FILM, occasion: 'Hochzeitstag oder Jubiläum', forWhom: 'Oma und Opa', message: 'Danke für 50 Jahre', messageStyle: 'Als Texteinblendung' },
+        music: { ...EMPTY_MUSIC, moods: ['Berührend'], genre: 'Klavier solo', vocals: 'persoenlich', names: 'Maria und Josef', language: 'Deutsch' },
+        handover: 'abgabe',
+      }),
+      [c],
+      'KR-T',
+      new Date(),
+      company,
+    );
+    const text = orderText(p, 'Kassetten retten');
+    for (const part of ['PAKET', 'Anlassfilm', 'USB-Stick', 'FILMWÜNSCHE', 'Oma und Opa', 'MUSIKWÜNSCHE', 'Berührend', 'Persönliches Lied (Deutsch)', 'Maria und Josef', '★ ca. 42 Min: Opa tanzt']) {
+      assert.ok(text.includes(part), `fehlt: ${part}`);
+    }
+  });
+
+  it('bringt alte Entwürfe auf den aktuellen Stand', () => {
+    const d = normalizeDraft({ selected: ['x'], contact: { name: 'Eva' } as never });
+    assert.deepEqual(d.music.moods, []);
+    assert.equal(d.contact.email, '');
+    assert.equal(d.packageId, '');
+  });
+});
+
+describe('Gutschein', () => {
+  it('prüft Pflichtangaben und Adresse nur bei Postversand', () => {
+    const contact = { name: 'Eva', email: 'eva@beispiel.at', phone: '', street: '', zip: '', city: '' };
+    const base = { ...EMPTY_VOUCHER, value: 'Erinnerungsfilm', recipient: 'Mama', delivery: 'Als PDF per E-Mail', contact, privacyAccepted: true };
+    assert.deepEqual(validateVoucher(base), {});
+    assert.ok(validateVoucher({ ...base, delivery: 'Gedruckte Karte per Post' }).street);
+    assert.ok(validateVoucher({ ...base, recipient: '' }).recipient);
+    const text = voucherText(base, createVoucherRef(new Date(2026, 10, 1), () => 0), 'Kassetten retten');
+    assert.ok(text.includes('GS-20261101-AAAA') && text.includes('Für: Mama'));
   });
 });

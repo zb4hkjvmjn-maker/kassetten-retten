@@ -87,6 +87,48 @@ function pricing(c: CompanyConfig): string {
   return `<table class="price-table"><tbody>${rows}</tbody></table><p class="price-note">Vor dem Start bekommst du ein unverbindliches Angebot.</p>`;
 }
 
+function packagesCards(c: CompanyConfig): string {
+  return c.packages
+    .map((p) => {
+      const includes = p.includes.map((i) => `<li>${escapeHtml(i)}</li>`).join('');
+      const badge = p.highlight ? '<span class="pkg__badge">Beliebt</span>' : '';
+      return `<li class="pkg${p.highlight ? ' pkg--highlight' : ''}">${badge}<h3>${escapeHtml(p.name)}</h3><p class="pkg__tagline">${escapeHtml(
+        p.tagline,
+      )}</p><p class="pkg__price">${p.price ? text(p.price) : 'Preis auf Anfrage'}</p><ul class="pkg__list">${includes}</ul><a class="btn ${
+        p.highlight ? 'btn--primary' : 'btn--ghost'
+      }" href="app/#/auftrag?paket=${encodeURIComponent(p.id)}">${escapeHtml(p.name)} anfragen</a></li>`;
+    })
+    .join('');
+}
+
+function extrasList(c: CompanyConfig): string {
+  if (c.extras.length === 0) return '';
+  return `<p class="extras"><strong>Extras:</strong> ${c.extras
+    .map((x) => `${escapeHtml(x.name)}${x.price ? ` <span class="muted">(${text(x.price)})</span>` : ''}`)
+    .join(' · ')}</p>`;
+}
+
+const chips = (items: string[]) => items.map((i) => `<li>${escapeHtml(i)}</li>`).join('');
+
+function voucherSection(c: CompanyConfig): string {
+  if (!c.voucher.enabled) return '';
+  return `<section class="section gift" id="verschenken" aria-labelledby="geschenk-titel">
+        <div class="wrap gift__inner">
+          <div class="gift__card" aria-hidden="true"><span class="gift__label">Gutschein</span><span class="gift__title">Erinnerungen retten</span><span class="gift__from">${escapeHtml(
+            c.brandName,
+          )}</span></div>
+          <div>
+            <p class="kicker">Erinnerungen verschenken</p>
+            <h2 id="geschenk-titel">Das Geschenk, über das sich die ganze Familie freut</h2>
+            <p>Die Eltern haben einen Karton voller Kassetten? Schenk ihnen, dass ihre Erinnerungen gerettet werden – als Datei oder als Film mit eigener Musik.</p>
+            <ul class="chips-inline">${[...c.voucher.values, ...c.packages.map((p) => `Paket ${p.name}`)].map((v) => `<li>${text(v)}</li>`).join('')}</ul>
+            <p class="muted">${escapeHtml(c.voucher.note)} Zustellung: ${c.voucher.delivery.map(escapeHtml).join(' oder ')}.</p>
+            <a class="btn btn--primary btn--lg" href="app/#/gutschein">Gutschein anfragen</a>
+          </div>
+        </div>
+      </section>`;
+}
+
 function faq(c: CompanyConfig): string {
   const items: [string, string][] = [
     [
@@ -98,6 +140,13 @@ function faq(c: CompanyConfig): string {
     ['Wie bekomme ich die Dateien?', `Per ${c.deliveryOptions.map(escapeHtml).join(' oder ')}. Die Dateien laufen am Computer, Handy, Tablet und Smart-TV.`],
     ['Eine Kassette ist schimmelig oder das Band ist kaputt.', `${escapeHtml(c.damagedNote)} Bitte spiele sie vorher nicht mehr ab – das kann sie weiter beschädigen.`],
   ];
+  items.push([
+    'Welche Musik verwendet ihr in den Filmen?',
+    `${escapeHtml(c.music.note)} Du bestimmst Stimmung, Stil, Tempo und Instrumente – auf Wunsch sogar ein persönliches Lied mit Text über euch.`,
+  ]);
+  if (c.voucher.enabled) {
+    items.push(['Kann ich das verschenken?', `Ja, mit einem Gutschein – als Wert oder für ein bestimmtes Paket. ${escapeHtml(c.voucher.note)}`]);
+  }
   if (c.turnaround.trim()) items.push(['Wie lange dauert es?', `In der Regel ${text(c.turnaround)}. Den genauen Zeitpunkt nennen wir dir im Angebot.`]);
   items.push(
     ['Wer sieht meine privaten Aufnahmen?', 'Deine Aufnahmen verwenden wir ausschließlich für die Digitalisierung. Wir geben sie nicht weiter und nutzen sie nicht für Werbung.'],
@@ -157,6 +206,10 @@ export function renderPage(html: string, c: CompanyConfig, opts: RenderOptions):
     year: String(opts.year ?? new Date().getFullYear()),
     emailHref: isPlaceholder(c.email) ? '#kontakt' : `mailto:${c.email}`,
     phoneHref: telHref(c.phone),
+    musicHref: `app/#/auftrag${(() => {
+      const m = c.packages.find((p) => p.music);
+      return m ? `?paket=${encodeURIComponent(m.id)}` : '';
+    })()}`,
   };
   const rich: Record<string, string> = {
     region: text(c.region),
@@ -181,6 +234,16 @@ export function renderPage(html: string, c: CompanyConfig, opts: RenderOptions):
     ogImage: opts.siteUrl
       ? `<meta property="og:image" content="${escapeHtml(opts.siteUrl)}og-image.png"><meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">`
       : '',
+    packagesCards: packagesCards(c),
+    extrasList: extrasList(c),
+    musicMoods: chips(c.music.moods),
+    musicGenres: chips(c.music.genres),
+    musicInstruments: chips(c.music.instruments),
+    musicNote: escapeHtml(c.music.note),
+    personalSong: c.music.personalSongPrice ? ` <span class="muted">(${text(c.music.personalSongPrice)})</span>` : '',
+    voucherSection: voucherSection(c),
+    voucherNav: c.voucher.enabled ? '<a href="#verschenken">Verschenken</a>' : '',
+    deadlineNote: c.deadlineNote.trim() ? `<p class="deadline">${text(c.deadlineNote)}</p>` : '',
     supportLink: c.support.url
       ? `<li><a href="${escapeHtml(c.support.url)}" target="_blank" rel="noopener noreferrer">${escapeHtml(c.support.label)}</a></li>`
       : '',

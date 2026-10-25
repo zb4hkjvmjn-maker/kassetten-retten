@@ -40,6 +40,7 @@ export function createCassette(input: CassetteInput, now = new Date()): Cassette
     ...cleanInput(input),
     id: createId(),
     checklist: { ...EMPTY_CHECKLIST },
+    moments: [],
     createdAt: stamp,
     updatedAt: stamp,
   };
